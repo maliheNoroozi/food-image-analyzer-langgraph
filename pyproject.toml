@@ -1,0 +1,14 @@
+[project]
+name = "meal-scanner"
+version = "0.1.0"
+description = "AI-powered meal scanner using OpenAI's API."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=2.8.1",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.1.0",
+]
