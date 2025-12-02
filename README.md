@@ -95,11 +95,16 @@ To exit the chat, type `exit` or `quit`.
 
 ```
 meal-scanner/
-├── main.py              # Main application entry point
-├── notebooks/           # Jupyter notebooks for research
-├── pyproject.toml       # Project dependencies (like package.json)
-├── uv.lock             # Lock file (like package-lock.json)
-└── README.md           # This file
+├── .gitignore          # Git ignore patterns
+├── .python-version     # Python version specification
+├── LICENSE             # Project license
+├── main.py             # Main application entry point
+├── notebooks/          # Jupyter notebooks for research
+│   └── research.ipynb  # Research and experimentation notebook
+├── pyproject.toml      # Project dependencies (like package.json)
+├── README.md           # This file
+├── src/                # Source code directory
+└── uv.lock             # Lock file (like package-lock.json)
 ```
 
 ### Using Jupyter Notebooks
