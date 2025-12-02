@@ -12,8 +12,6 @@ AI-powered meal scanner using OpenAI's API.
 
 ### 1. Install `uv` Package Manager
 
-`uv` is a fast Python package manager (similar to npm/pnpm for JavaScript):
-
 ```bash
 # macOS/Linux
 brew install uv
@@ -21,17 +19,41 @@ brew install uv
 
 After installation, restart your terminal or run:
 
-### 2. Install Dependencies
+### 2. install Python version 3.12.0
+
+```bash
+# Installing python and creating virtual environment at: (`.venv/`
+uv venv --python 3.12.0
+```
+
+### 3. Initialize project and install dependencies and dev dependencies
+
+```bash
+uv init
+```
+
+Adding Dependencies
+
+```bash
+uv add openai
+```
+
+Adding Dependencies to a Dependency Group
+
+```bash
+uv add --group dev ipykernel
+```
+
+### 4. Install Dependencies
 
 Install all project dependencies (like `npm install`):
 
 ```bash
+# This will installs packages from `pyproject.toml`.
 uv sync
 ```
 
-This creates a virtual environment (`.venv/`) and installs packages from `pyproject.toml`.
-
-### 3. Set Up OpenAI API Key
+### 5. Set Up OpenAI API Key
 
 #### Option A: Using `.env` file (Recommended)
 
@@ -54,7 +76,7 @@ from dotenv import load_dotenv
 load_dotenv()
 ```
 
-### 4. Run the Application
+### 6. Run the Application
 
 ```bash
 uv run python main.py
