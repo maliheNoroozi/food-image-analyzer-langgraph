@@ -1,11 +1,32 @@
 from openai import OpenAI
 
+
 if __name__ == "__main__":
     client = OpenAI()
 
-    response = client.responses.create(
-        model = 'gpt-5.1',
-        input = 'Hi, my name is Maliheh'
-    )
+    model = 'gpt-5.1'
+    history = []
 
-    print(response.output_text)
+    while True:
+        user_prompt = input('You: ')
+
+        if(user_prompt.lower() in ['exit', 'quit']):
+            break
+
+        history.append({
+            'role': 'user',
+            'content': user_prompt
+        })
+
+        response = client.responses.create(
+            model = model,
+            input = history
+        )
+
+        assistant_response = response.output_text
+        history.append({
+            'role': 'assistant',
+            'content': assistant_response
+        })
+
+        print(f'Assistant: {assistant_response}')
