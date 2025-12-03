@@ -11,6 +11,7 @@ if __name__ == "__main__":
         user_prompt = input('You: ')
 
         if(user_prompt.lower() in ['exit', 'quit']):
+            print('Exiting chat.')
             break
 
         history.append({
