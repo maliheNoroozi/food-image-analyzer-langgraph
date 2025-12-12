@@ -14,7 +14,7 @@ class ChatGPT:
         )
         return response.output_text
 
-    def generate_parsed_response(self, model: str, system_prompt: str, user_prompt: str, response_format) -> BaseModel:
+    def generate_parsed_response(self, model: str, system_prompt: str, user_prompt: str, response_format: BaseModel) -> BaseModel:
         response = self.client.responses.parse(
             model=model,
             input=[
@@ -31,7 +31,7 @@ class ChatGPT:
         )
         return response.output_parsed
 
-    def generate_image_response_by_image_url(self, model: str, system_prompt: str, user_prompt: str, image_url: str, response_format) -> BaseModel:
+    def generate_image_response_by_image_url(self, model: str, system_prompt: str, user_prompt: str, image_url: str, response_format: BaseModel) -> BaseModel:
         response = self.client.responses.parse(
             model=model,
             input=[
@@ -56,7 +56,7 @@ class ChatGPT:
         )
         return response.output_parsed
 
-    def generate_image_response_by_base64_image(self, model: str, system_prompt: str, user_prompt: str, base64_image: str, response_format) -> BaseModel:
+    def generate_image_response_by_base64_image(self, model: str, system_prompt: str, user_prompt: str, base64_image: str, response_format: BaseModel) -> BaseModel:
         response = self.client.responses.parse(
             model=model,
             input=[
