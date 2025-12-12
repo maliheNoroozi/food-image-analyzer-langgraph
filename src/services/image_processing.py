@@ -1,8 +1,8 @@
 import base64
 import requests
-from loguro import logger
+from loguru import logger
 
-def encode_image(image_path: str):
+def encode_image_by_path(image_path: str):
     try:
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode("utf-8")
