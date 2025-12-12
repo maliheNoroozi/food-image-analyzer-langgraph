@@ -11,5 +11,6 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ipykernel>=7.1.0",
+    "loguru>=0.7.3",
     "ruff>=0.14.8",
 ]
