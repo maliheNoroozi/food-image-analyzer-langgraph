@@ -10,7 +10,7 @@ class NutrientsAnalyzer:
 
     def analyze(self, ingredients: list[Ingredient]):
         try:
-            ingredients_str = "\n".join([str(ing) for ing in ingredients])
+            ingredients_str = "\n".join([str(ingredient) for ingredient in ingredients])
             user_prompt = MealScannerPrompts.NUTRIENT_USER_PROMPT.format(
                 ingredients_list=ingredients_str
             )
