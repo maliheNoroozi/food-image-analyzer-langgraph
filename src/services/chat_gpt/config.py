@@ -1,0 +1,1 @@
+DEFAULT_CHATGPT_MODEL = "gpt-4.1"
