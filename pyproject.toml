@@ -5,6 +5,7 @@ description = "AI-powered meal scanner using OpenAI's API."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi[standard]>=0.124.4",
     "openai>=2.8.1",
     "requests>=2.32.5",
 ]
