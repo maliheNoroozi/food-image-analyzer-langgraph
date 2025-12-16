@@ -8,7 +8,7 @@ class NutrientsAnalyzer:
     def __init__(self):
         self.chat_gpt = ChatGPT()
 
-    def analyze(self, ingredients: list[Ingredient]):
+    def analyze(self, ingredients: list[Ingredient]) -> NutrientsResponse:
         try:
             ingredients_str = "\n".join([str(ingredient) for ingredient in ingredients])
             user_prompt = MealScannerPrompts.NUTRIENT_USER_PROMPT.format(
