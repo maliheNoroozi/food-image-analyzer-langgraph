@@ -1,6 +1,23 @@
 # meal-scanner
 
-AI-powered meal scanner using OpenAI's API.
+AI-powered meal scanner that analyzes food images to extract ingredients and nutritional information using OpenAI's Vision API.
+
+## Overview
+
+This application provides:
+
+- 🍽️ **Ingredient Detection**: Analyze meal images to identify ingredients and their quantities
+- 📊 **Nutritional Analysis**: Calculate detailed nutritional information (calories, macros, vitamins, minerals)
+- 🚀 **FastAPI REST API**: Modern, fast API endpoints for integration
+- 🔍 **Smart Environment Loading**: Automatic `.env` file discovery with parent directory traversal
+- 📓 **Research Notebooks**: Jupyter notebooks for experimentation and development
+
+### How It Works
+
+1. **Upload/provide a meal image URL**
+2. **AI Vision Analysis**: OpenAI's GPT-4 Vision model identifies ingredients
+3. **Nutritional Calculation**: Analyzes nutritional content based on identified ingredients
+4. **Structured Response**: Returns detailed JSON with ingredients, quantities, and nutrients
 
 ## Prerequisites
 
@@ -59,21 +76,59 @@ Create a `.env` file in the project root:
 OPENAI_API_KEY=your-api-key-here
 ```
 
-Then load it in your terminal session:
+**Understanding Environment Variable Loading:**
+
+load it in your terminal session:
 
 ```bash
 set -a; source .env; set +a
 ```
 
-Or use `python-dotenv` package to load it automatically in Python:
-
-```bash
-uv add python-dotenv
-```
+This project uses `python-dotenv` to automatically load environment variables from the `.env` file. The application is configured with smart `.env` file discovery using `find_dotenv()`:
 
 ```python
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
+```
+
+**How `find_dotenv()` Works:**
+
+The `find_dotenv()` function intelligently searches for your `.env` file by **traversing parent directories**. This means:
+
+1. **Starts at the current file's location** (e.g., `src/api/app.py`)
+2. **Searches upward** through each parent directory:
+   - `src/api/` → no `.env` found
+   - `src/` → no `.env` found
+   - `meal-scanner/` (project root) → ✓ `.env` found!
+3. **Returns the path** to the first `.env` file it finds
+4. **Loads the variables** into your application's environment
+
+**Benefits of this approach:**
+
+- ✅ Works regardless of where you run your Python files from
+- ✅ No need to specify absolute paths
+- ✅ Single `.env` file at project root serves entire codebase
+- ✅ Consistent across different subdirectories (`src/api/`, `src/services/`, etc.)
+
+**Alternative approaches:**
+
+```python
+# Simple approach - looks in current directory only
 load_dotenv()
+
+# Explicit path - requires exact location
+load_dotenv('.env')
+
+# With traversal - automatically finds .env in parent dirs (CURRENT APPROACH)
+load_dotenv(find_dotenv())
+```
+
+**Loading .env in terminal sessions:**
+
+If you need to load the `.env` file in your terminal session:
+
+```bash
+set -a; source .env; set +a
 ```
 
 #### Option B: Export as Environment Variable
@@ -97,6 +152,33 @@ set OPENAI_API_KEY=your-api-key-here
 ```
 
 ### 5. Run the Application
+
+#### FastAPI Server
+
+Start the FastAPI development server:
+
+```bash
+PYTHONPATH=. uv run fastapi dev src/api/app.py
+```
+
+The API will be available at `http://localhost:8000`
+
+**API Endpoints:**
+
+- `GET /` - Health check endpoint
+- `POST /ingredients` - Analyze image to extract ingredients
+  - Parameter: `image_url` (string) - URL of the meal image
+  - Returns: List of ingredients with quantities
+- `POST /nutrients` - Calculate nutritional information
+  - Body: List of `Ingredient` objects
+  - Returns: Detailed nutritional analysis
+
+**Interactive API Documentation:**
+
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+#### Command Line Application
 
 ```bash
 uv run python main.py
@@ -164,15 +246,18 @@ To make it permanent, use System Environment Variables:
 
 ```
 meal-scanner/
+├── .env                    # Environment variables (create this)
 ├── .gitignore              # Git ignore patterns
 ├── .python-version         # Python version specification
 ├── LICENSE                 # Project license
-├── main.py                 # Main application entry point
+├── main.py                 # Command-line application entry point
 ├── notebooks/              # Jupyter notebooks for research
 │   └── research.ipynb      # Research and experimentation notebook
 ├── pyproject.toml          # Project dependencies and configuration
 ├── README.md               # This file
 ├── src/                    # Source code directory
+│   ├── api/                # FastAPI application
+│   │   └── app.py          # API endpoints and server setup
 │   └── services/           # Service modules
 │       ├── __init__.py     # Package initializer
 │       ├── analysis/       # Meal analysis services
@@ -185,8 +270,16 @@ meal-scanner/
 │       │   └── gpt.py      # GPT client
 │       ├── image_processing.py  # Image processing utilities
 │       └── prompts.py      # AI prompts and templates
-└── uv.lock                 # Dependency lock
+└── uv.lock                 # Dependency lock file
 ```
+
+**Key Files:**
+
+- **`.env`**: Environment variables (API keys) - auto-discovered via parent directory traversal
+- **`src/api/app.py`**: FastAPI REST API with ingredient and nutrient endpoints
+- **`main.py`**: Command-line interface for direct usage
+- **`src/services/analysis/`**: Core analysis logic for ingredients and nutrients
+- **`src/services/chat_gpt/`**: OpenAI API integration and configuration
 
 ### Using Jupyter Notebooks
 
