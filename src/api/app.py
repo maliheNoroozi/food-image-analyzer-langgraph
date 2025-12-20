@@ -1,29 +1,80 @@
+import sys
+from pathlib import Path
+from datetime import datetime
+
+# Add src directory to Python path
+src_path = Path(__file__).parent.parent
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 from fastapi import FastAPI
 from dotenv import load_dotenv, find_dotenv
 
+from services.analysis.ingredients import IngredientsAnalyzer
+from services.analysis.nutrients import NutrientsAnalyzer
 from services.analysis.schemas import Ingredient
+from api.schemas import (
+    IngredientsEndpointRequest,
+    IngredientsEndpointResponse,
+    NutrientsEndpointRequest,
+    NutrientsEndpointResponse,
+    Status
+)
 
 load_dotenv(find_dotenv())
 
 app = FastAPI()
+ingredients_analyzer = IngredientsAnalyzer()
+nutrients_analyzer = NutrientsAnalyzer()
+
+@app.get('/')
+def root():
+    return {'message': 'Welcome to the Meal Scanner API'}
 
 @app.get('/health')
 def health_check():
     return {'status': 'healthy'}
 
-@app.post('/ingredients', response_model: IngrediantsResponse)
-def ingredients(image_url: str):
-    from services.analysis.ingredients import IngredientsAnalyzer
-    analyzer = IngredientsAnalyzer()
-    result = analyzer.analyze(image_url = image_url)
-    return result
+@app.post('/ingredients')
+def ingredients(request: IngredientsEndpointRequest) -> IngredientsEndpointResponse:
+    try: 
+        result = ingredients_analyzer.analyze(image_url=request.image_url)
+        return IngredientsEndpointResponse(
+            status=Status.SUCCESSFUL,
+            processed_at=datetime.utcnow(),
+            request=request,
+            response=result,
+            error=None
+        )
+    except Exception as error:
+        return IngredientsEndpointResponse(
+            status=Status.FAILED,
+            processed_at=datetime.utcnow(),
+            request=request,
+            response=None,
+            error=str(error)
+        )
+    
 
-@app.post('/nutrients', response_model: NutrientsResponse)
-def nutrients(ingredients: list[Ingredient]):
-    from services.analysis.nutrients import NutrientsAnalyzer
-    analyzer = NutrientsAnalyzer()
-    result = analyzer.analyze(ingredients = ingredients)
-    return result
+@app.post('/nutrients')
+def nutrients(request: NutrientsEndpointRequest) -> NutrientsEndpointResponse:
+    try:
+        result = nutrients_analyzer.analyze(ingredients=request.ingredients)
+        return NutrientsEndpointResponse(
+            status=Status.SUCCESSFUL,
+            processed_at=datetime.utcnow(),
+            request=request,
+            response=result,
+            error=None
+        )
+    except Exception as error:
+        return NutrientsEndpointResponse(
+            status=Status.FAILED,
+            processed_at=datetime.utcnow(),
+            request=request,
+            response=None,
+            error=str(error)
+        )
 
 
 
