@@ -4,7 +4,7 @@ class Ingredient(BaseModel):
     ingredient_name: str
     portiont: str
 
-class IngrediantsResponse(BaseModel):
+class IngredientsResponse(BaseModel):
     name: str
     ingredients: list[Ingredient]
 
