@@ -1,6 +1,8 @@
 import base64
+
 import requests
 from loguru import logger
+
 
 def encode_image_by_path(image_path: str):
     try:
@@ -10,6 +12,7 @@ def encode_image_by_path(image_path: str):
         logger.error(f"Error encoding image: {error}")
         raise error
 
+
 def encode_image_by_url(image_url: str):
     try:
         response = requests.get(image_url)
@@ -17,5 +20,3 @@ def encode_image_by_url(image_url: str):
     except Exception as error:
         logger.error(f"Error encoding image by url: {error}")
         raise error
-       
-

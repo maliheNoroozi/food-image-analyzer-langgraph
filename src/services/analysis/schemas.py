@@ -1,12 +1,15 @@
 from pydantic import BaseModel, Field
 
+
 class Ingredient(BaseModel):
     ingredient_name: str
     portiont: str
 
+
 class IngredientsResponse(BaseModel):
     name: str
     ingredients: list[Ingredient]
+
 
 class NutrientsResponse(BaseModel):
     total_calories: int

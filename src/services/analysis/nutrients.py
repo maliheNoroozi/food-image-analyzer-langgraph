@@ -1,8 +1,9 @@
 from loguru import logger
 
-from services.chat_gpt.gpt import ChatGPT
 from services.analysis.schemas import Ingredient, NutrientsResponse
+from services.chat_gpt.gpt import ChatGPT
 from services.prompts import MealScannerPrompts
+
 
 class NutrientsAnalyzer:
     def __init__(self):
@@ -15,10 +16,10 @@ class NutrientsAnalyzer:
                 ingredients_list=ingredients_str
             )
             result = self.chat_gpt.generate_parsed_response(
-                model='gpt-4.1',
+                model="gpt-4.1",
                 system_prompt=MealScannerPrompts.NUTRIENT_SYSTEM_PROMPT,
                 user_prompt=user_prompt,
-                response_format=NutrientsResponse
+                response_format=NutrientsResponse,
             )
             return result
         except Exception as error:

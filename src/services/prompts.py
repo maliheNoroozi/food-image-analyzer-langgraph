@@ -11,7 +11,7 @@ Analyze the image, meal name, extract any ingredients, and estimate their portio
 You are a helpful assistant that analyzes food ingredients and their portions and estimates their nutritional values.
 """
 
-    NUTRIENT_USER_PROMPT= """
+    NUTRIENT_USER_PROMPT = """
 Analyze the foloowing ingredients and and their portions and estimate the following:
 - Total Calories
 - Total Protein in grams
@@ -22,4 +22,3 @@ Analyze the foloowing ingredients and and their portions and estimate the follow
 Ingredients:
 {ingredients_list}
 """
-
