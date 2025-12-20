@@ -324,10 +324,9 @@ uv run ruff format --check .
 Before committing code, run:
 
 ```bash
-# Fix linting issues and format code
-uv run ruff check --fix .
-uv run ruff format .
-uv run ruff check --select I --fix
+uv run ruff check --fix .             # Automatically fix linting violations (unused imports, undefined names, bad patterns, style issues, etc.).
+uv run ruff format .                  # Format code (indentation, line length, quotes, wrapping, spacing) to ensure consistent style
+uv run ruff check --select I --fix    # Sort, remove, organize and groups import statements automatically
 ```
 
 ## License
