@@ -327,6 +327,7 @@ Before committing code, run:
 # Fix linting issues and format code
 uv run ruff check --fix .
 uv run ruff format .
+uv run ruff check --select I --fix
 ```
 
 ## License
