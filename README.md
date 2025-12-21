@@ -1,6 +1,6 @@
-# meal-scanner
+# food-image-analyzer
 
-AI-powered meal scanner that analyzes food images to extract ingredients and nutritional information using OpenAI's Vision API.
+AI-powered food image analyzer that analyzes food images to extract ingredients and nutritional information using OpenAI's Vision API.
 
 ## Overview
 
@@ -99,7 +99,7 @@ The `find_dotenv()` function intelligently searches for your `.env` file by **tr
 2. **Searches upward** through each parent directory:
    - `src/api/` → no `.env` found
    - `src/` → no `.env` found
-   - `meal-scanner/` (project root) → ✓ `.env` found!
+   - `food-image-analyzer/` (project root) → ✓ `.env` found!
 3. **Returns the path** to the first `.env` file it finds
 4. **Loads the variables** into your application's environment
 
@@ -213,7 +213,7 @@ PYTHONPATH=. python main.py
 To make it permanent, add to your `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-export PYTHONPATH="${PYTHONPATH}:/Users/malihehnorouzi/Desktop/Projects/meal-scanner"
+export PYTHONPATH="${PYTHONPATH}:/Users/malihehnorouzi/Desktop/Projects/food-image-analyzer"
 ```
 
 **Windows (PowerShell):**
@@ -226,7 +226,7 @@ $env:PYTHONPATH = "."; python main.py
 To make it permanent, add to your PowerShell profile:
 
 ```powershell
-$env:PYTHONPATH = "C:\Users\YourUsername\Desktop\Projects\meal-scanner"
+$env:PYTHONPATH = "C:\Users\YourUsername\Desktop\Projects\food-image-analyzer"
 ```
 
 **Windows (Command Prompt):**
@@ -240,12 +240,12 @@ To make it permanent, use System Environment Variables:
 
 1. Search for "Environment Variables" in Windows Settings
 2. Add or edit `PYTHONPATH` variable
-3. Set value to `C:\Users\YourUsername\Desktop\Projects\meal-scanner`
+3. Set value to `C:\Users\YourUsername\Desktop\Projects\food-image-analyzer`
 
 ## Project Structure
 
 ```
-meal-scanner/
+food-image-analyzer/
 ├── .env                    # Environment variables (create this)
 ├── .gitignore              # Git ignore patterns
 ├── .python-version         # Python version specification

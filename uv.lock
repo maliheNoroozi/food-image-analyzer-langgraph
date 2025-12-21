@@ -769,7 +769,7 @@ wheels = [
 ]
 
 [[package]]
-name = "meal-scanner"
+name = "food-image-analyzer"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

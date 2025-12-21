@@ -29,7 +29,7 @@ nutrients_analyzer = NutrientsAnalyzer()
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to the Meal Scanner API"}
+    return {"message": "Welcome to the Food Image Analyzer API"}
 
 
 @app.get("/health")

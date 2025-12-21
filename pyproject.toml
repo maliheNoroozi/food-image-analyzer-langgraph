@@ -1,7 +1,7 @@
 [project]
-name = "meal-scanner"
+name = "food-image-analyzer"
 version = "0.1.0"
-description = "AI-powered meal scanner using OpenAI's API."
+description = "AI-powered food image analyzer using OpenAI's API."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
