@@ -6,7 +6,7 @@ AI-powered food image analyzer that analyzes food images to extract ingredients 
 
 This application provides:
 
-- 🍽️ **Ingredient Detection**: Analyze meal images to identify ingredients and their quantities
+- 🍽️ **Ingredient Detection**: Analyze food images to identify ingredients and their quantities
 - 📊 **Nutritional Analysis**: Calculate detailed nutritional information (calories, macros, vitamins, minerals)
 - 🚀 **FastAPI REST API**: Modern, fast API endpoints for integration
 - 🔍 **Smart Environment Loading**: Automatic `.env` file discovery with parent directory traversal
@@ -14,7 +14,7 @@ This application provides:
 
 ### How It Works
 
-1. **Upload/provide a meal image URL**
+1. **Upload/provide a food image URL**
 2. **AI Vision Analysis**: OpenAI's GPT-4 Vision model identifies ingredients
 3. **Nutritional Calculation**: Analyzes nutritional content based on identified ingredients
 4. **Structured Response**: Returns detailed JSON with ingredients, quantities, and nutrients
@@ -167,7 +167,7 @@ The API will be available at `http://localhost:8000`
 
 - `GET /` - Health check endpoint
 - `POST /ingredients` - Analyze image to extract ingredients
-  - Parameter: `image_url` (string) - URL of the meal image
+  - Parameter: `image_url` (string) - URL of the food image
   - Returns: List of ingredients with quantities
 - `POST /nutrients` - Calculate nutritional information
   - Body: List of `Ingredient` objects
@@ -260,7 +260,7 @@ food-image-analyzer/
 │   │   └── app.py          # API endpoints and server setup
 │   └── services/           # Service modules
 │       ├── __init__.py     # Package initializer
-│       ├── analysis/       # Meal analysis services
+│       ├── analysis/       # food analysis services
 │       │   ├── ingredients.py  # Ingredient analysis
 │       │   ├── nutrients.py    # Nutrient analysis
 │       │   └── schemas.py      # Data schemas
