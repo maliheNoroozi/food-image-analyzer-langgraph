@@ -158,7 +158,8 @@ set OPENAI_API_KEY=your-api-key-here
 Start the FastAPI development server:
 
 ```bash
-PYTHONPATH=. uv run fastapi dev src/api/app.py
+cd src
+PYTHONPATH=. uv run fastapi dev api/app.py
 ```
 
 The API will be available at `http://localhost:8000`
