@@ -257,10 +257,12 @@ food-image-analyzer/
 ├── README.md               # This file
 ├── src/                    # Source code directory
 │   ├── api/                # FastAPI application
-│   │   └── app.py          # API endpoints and server setup
+│   │   ├── __init__.py     # Package initializer
+│   │   ├── app.py          # API endpoints and server setup
+│   │   └── schemas.py      # API request/response schemas
 │   └── services/           # Service modules
 │       ├── __init__.py     # Package initializer
-│       ├── analysis/       # food analysis services
+│       ├── analysis/       # Food analysis services
 │       │   ├── ingredients.py  # Ingredient analysis
 │       │   ├── nutrients.py    # Nutrient analysis
 │       │   └── schemas.py      # Data schemas
