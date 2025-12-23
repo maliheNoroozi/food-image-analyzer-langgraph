@@ -1,21 +1,23 @@
 from openai import OpenAI
 from pydantic import BaseModel
+from opik.integrations.openai import track_openai
 
+from services.chat_gpt.config import DEFAULT_CHATGPT_MODEL
 
 class ChatGPT:
     def __init__(self):
-        self.client = OpenAI()
+        self.client = track_openai(OpenAI())
 
-    def generate_text_response(self, model: str, user_prompt: str):
+    def generate_text_response(self, user_prompt: str, model: str = DEFAULT_CHATGPT_MODEL) -> str:
         response = self.client.responses.create(model=model, input=user_prompt)
         return response.output_text
 
     def generate_parsed_response(
         self,
-        model: str,
         system_prompt: str,
         user_prompt: str,
         response_format: BaseModel,
+        model: str = DEFAULT_CHATGPT_MODEL,
     ) -> BaseModel:
         response = self.client.responses.parse(
             model=model,
@@ -29,11 +31,11 @@ class ChatGPT:
 
     def generate_image_response_by_image_url(
         self,
-        model: str,
         system_prompt: str,
         user_prompt: str,
         image_url: str,
         response_format: BaseModel,
+        model: str = DEFAULT_CHATGPT_MODEL,
     ) -> BaseModel:
         response = self.client.responses.parse(
             model=model,
@@ -53,11 +55,11 @@ class ChatGPT:
 
     def generate_image_response_by_base64_image(
         self,
-        model: str,
         system_prompt: str,
         user_prompt: str,
         base64_image: str,
         response_format: BaseModel,
+        model: str = DEFAULT_CHATGPT_MODEL,
     ) -> BaseModel:
         response = self.client.responses.parse(
             model=model,
