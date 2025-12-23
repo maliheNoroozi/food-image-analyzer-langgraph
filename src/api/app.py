@@ -1,13 +1,10 @@
 import sys
 from datetime import datetime
 from pathlib import Path
-
-# Add src directory to Python path
-src_path = Path(__file__).parent.parent
-if str(src_path) not in sys.path:
-    sys.path.insert(0, str(src_path))
-
 from dotenv import find_dotenv, load_dotenv
+
+import opik
+from services.opik_tracing.configure import configure_opik
 from fastapi import FastAPI
 
 from api.schemas import (
@@ -19,9 +16,8 @@ from api.schemas import (
 )
 from services.analysis.ingredients import IngredientsAnalyzer
 from services.analysis.nutrients import NutrientsAnalyzer
-
-load_dotenv(find_dotenv())
-
+load_dotenv(find_dotenv())  # Must run BEFORE importing opik
+configure_opik()
 app = FastAPI()
 ingredients_analyzer = IngredientsAnalyzer()
 nutrients_analyzer = NutrientsAnalyzer()
@@ -35,7 +31,6 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
-
 
 @app.post("/ingredients")
 def ingredients(request: IngredientsEndpointRequest) -> IngredientsEndpointResponse:
