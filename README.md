@@ -164,6 +164,20 @@ PYTHONPATH=. uv run fastapi dev api/app.py
 
 The API will be available at `http://localhost:8000`
 
+#### Docker
+
+**Build the image:**
+
+```bash
+docker build -t food-image-analyzer .
+```
+
+**Run the container:**
+
+```bash
+docker run --rm -p 8000:8000 --env-file .env food-image-analyzer
+```
+
 **API Endpoints:**
 
 - `GET /` - Health check endpoint
