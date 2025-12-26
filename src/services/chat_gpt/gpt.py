@@ -1,14 +1,17 @@
 from openai import OpenAI
-from pydantic import BaseModel
 from opik.integrations.openai import track_openai
+from pydantic import BaseModel
 
 from services.chat_gpt.config import DEFAULT_CHATGPT_MODEL
+
 
 class ChatGPT:
     def __init__(self):
         self.client = track_openai(OpenAI())
 
-    def generate_text_response(self, user_prompt: str, model: str = DEFAULT_CHATGPT_MODEL) -> str:
+    def generate_text_response(
+        self, user_prompt: str, model: str = DEFAULT_CHATGPT_MODEL
+    ) -> str:
         response = self.client.responses.create(model=model, input=user_prompt)
         return response.output_text
 

@@ -1,10 +1,6 @@
-import sys
 from datetime import datetime
-from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
 
-import opik
-from services.opik_tracing.configure import configure_opik
+from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI
 
 from api.schemas import (
@@ -16,6 +12,8 @@ from api.schemas import (
 )
 from services.analysis.ingredients import IngredientsAnalyzer
 from services.analysis.nutrients import NutrientsAnalyzer
+from services.opik_tracing.configure import configure_opik
+
 load_dotenv(find_dotenv())  # Must run BEFORE importing opik
 configure_opik()
 app = FastAPI()
@@ -31,6 +29,7 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
 
 @app.post("/ingredients")
 def ingredients(request: IngredientsEndpointRequest) -> IngredientsEndpointResponse:
