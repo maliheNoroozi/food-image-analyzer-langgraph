@@ -4,6 +4,7 @@ from services.analysis.schemas import Ingredient, NutrientsResponse
 from services.chat_gpt.gpt import ChatGPT
 from services.prompts import FoodImageAnalyzerPrompts
 from services.cache.client import RedisService
+from services.chat_gpt.config import DEFAULT_CHATGPT_MODEL
 
 
 class NutrientsAnalyzer:
@@ -23,7 +24,7 @@ class NutrientsAnalyzer:
                 ingredients_list=ingredients_str
             )
             result = self.chat_gpt.generate_parsed_response(
-                model="gpt-4.1",
+                model=DEFAULT_CHATGPT_MODEL,
                 system_prompt=FoodImageAnalyzerPrompts.NUTRIENT_SYSTEM_PROMPT,
                 user_prompt=user_prompt,
                 response_format=NutrientsResponse,
