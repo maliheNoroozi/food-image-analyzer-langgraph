@@ -1,12 +1,14 @@
+import hashlib
+
 from loguru import logger
 
 from services.analysis.schemas import IngredientsResponse
+from services.cache.client import RedisService
+from services.chat_gpt.config import DEFAULT_CHATGPT_MODEL
 from services.chat_gpt.gpt import ChatGPT
 from services.image_processing import encode_image_by_url
 from services.prompts import FoodImageAnalyzerPrompts
-from services.cache.client import RedisService
-import hashlib
-from services.chat_gpt.config import DEFAULT_CHATGPT_MODEL
+
 
 class IngredientsAnalyzer:
     def __init__(self):
