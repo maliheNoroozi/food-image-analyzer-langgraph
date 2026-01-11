@@ -262,8 +262,12 @@ To make it permanent, use System Environment Variables:
 ```
 food-image-analyzer/
 ├── .env                    # Environment variables (create this)
+├── .github/                # GitHub configuration
+│   └── workflows/
+│       └── tests.yml       # CI/CD test workflow
 ├── .gitignore              # Git ignore patterns
 ├── .python-version         # Python version specification
+├── Dockerfile              # Docker container configuration
 ├── LICENSE                 # Project license
 ├── main.py                 # Command-line application entry point
 ├── notebooks/              # Jupyter notebooks for research
@@ -281,12 +285,31 @@ food-image-analyzer/
 │       │   ├── ingredients.py  # Ingredient analysis
 │       │   ├── nutrients.py    # Nutrient analysis
 │       │   └── schemas.py      # Data schemas
+│       ├── cache/          # Caching service
+│       │   ├── __init__.py
+│       │   ├── client.py   # Cache client implementation
+│       │   └── config.py   # Cache configuration
 │       ├── chat_gpt/       # OpenAI ChatGPT integration
 │       │   ├── __init__.py
 │       │   ├── config.py   # API configuration
 │       │   └── gpt.py      # GPT client
 │       ├── image_processing.py  # Image processing utilities
+│       ├── opik_tracing/   # Opik tracing integration
+│       │   ├── config.py   # Tracing configuration
+│       │   └── configure.py # Tracing setup
 │       └── prompts.py      # AI prompts and templates
+├── tests/                  # Test suite
+│   ├── __init__.py
+│   ├── conftest.py         # Pytest fixtures and configuration
+│   ├── api/                # API endpoint tests
+│   │   ├── __init__.py
+│   │   └── test_app.py     # FastAPI app tests
+│   └── services/           # Service tests
+│       ├── __init__.py
+│       └── analysis/       # Analysis service tests
+│           ├── __init__.py
+│           ├── test_ingredients.py  # Ingredient analysis tests
+│           └── test_nutrients.py    # Nutrient analysis tests
 └── uv.lock                 # Dependency lock file
 ```
 
@@ -297,6 +320,7 @@ food-image-analyzer/
 - **`main.py`**: Command-line interface for direct usage
 - **`src/services/analysis/`**: Core analysis logic for ingredients and nutrients
 - **`src/services/chat_gpt/`**: OpenAI API integration and configuration
+- **`tests/`**: Comprehensive test suite using pytest
 
 ### Using Jupyter Notebooks
 
