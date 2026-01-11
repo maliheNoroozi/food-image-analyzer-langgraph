@@ -9,6 +9,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      opik_api_key: ${{ secrets.OPIK_API_KEY }}
+      opik_url_override: ${{ secrets.OPIK_URL_OVERRIDE }}
+      opik_project_name: "food-image-analyzer"
+      opik_workspace: ${{ secrets.OPIK_WORKSPACE }}
 
     steps:
       - name: Checkout repository
