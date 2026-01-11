@@ -17,4 +17,9 @@ dev = [
     "loguru>=0.7.3",
     "redis>=7.1.0",
     "ruff>=0.14.8",
+    "pytest>=8.0.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
