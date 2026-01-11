@@ -346,6 +346,40 @@ uv run ruff format .                  # Format code (indentation, line length, q
 uv run ruff check --select I --fix    # Sort, remove, organize and groups import statements automatically
 ```
 
+## Running Tests
+
+This project uses [pytest](https://docs.pytest.org/) for unit testing.
+
+### Run All Tests
+
+```bash
+uv run pytest
+```
+
+### Run Tests with Verbose Output
+
+```bash
+uv run pytest -v
+```
+
+### Run a Specific Test File
+
+```bash
+uv run pytest tests/api/test_app.py
+```
+
+### Using UV Scripts
+
+The project also defines convenient test scripts in `pyproject.toml`:
+
+```bash
+# Run all tests
+uv run test
+
+# Run tests with verbose output
+uv run test-v
+```
+
 ## License
 
 See [LICENSE](LICENSE) for details.
