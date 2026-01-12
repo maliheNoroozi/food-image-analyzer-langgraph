@@ -7,15 +7,17 @@ AI-powered food image analyzer that analyzes food images to extract ingredients 
 This application provides:
 
 - 🍽️ **Ingredient Detection**: Analyze food images to identify ingredients and their quantities
-- 📊 **Nutritional Analysis**: Calculate detailed nutritional information (calories, macros, vitamins, minerals)
+- 📊 **Nutritional Analysis**: Calculate detailed nutritional information (calories, macros, fiber)
 - 🚀 **FastAPI REST API**: Modern, fast API endpoints for integration
+- 🔄 **Redis Caching**: Cache analysis results for improved performance
+- 📡 **Opik Tracing**: Integrated observability and tracing for API calls
 - 🔍 **Smart Environment Loading**: Automatic `.env` file discovery with parent directory traversal
 - 📓 **Research Notebooks**: Jupyter notebooks for experimentation and development
 
 ### How It Works
 
 1. **Upload/provide a food image URL**
-2. **AI Vision Analysis**: OpenAI's GPT-4 Vision model identifies ingredients
+2. **AI Vision Analysis**: OpenAI's GPT-4.1 Vision model identifies ingredients
 3. **Nutritional Calculation**: Analyzes nutritional content based on identified ingredients
 4. **Structured Response**: Returns detailed JSON with ingredients, quantities, and nutrients
 
@@ -23,6 +25,8 @@ This application provides:
 
 - Python 3.12 or higher
 - OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
+- Opik API key ([Get one here](https://www.comet.com/site/products/opik/))
+- Redis server (optional, for caching)
 - `uv` package manager (recommended)
 
 ## Getting Started
@@ -66,14 +70,26 @@ uv add package-name
 uv add --dev package-name
 ```
 
-### 4. Set Up OpenAI API Key
+### 4. Set Up Environment Variables
 
 #### Option A: Using `.env` File (Recommended)
 
 Create a `.env` file in the project root:
 
 ```bash
-OPENAI_API_KEY=your-api-key-here
+# OpenAI API Configuration
+OPENAI_API_KEY=your-openai-api-key-here
+
+# Opik Tracing Configuration
+OPIK_API_KEY=your-opik-api-key-here
+OPIK_PROJECT_NAME=food-image-analyzer
+OPIK_WORKSPACE=your-opik-workspace
+OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
+
+# Redis Configuration (optional)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
 ```
 
 **Understanding Environment Variable Loading:**
@@ -110,48 +126,38 @@ The `find_dotenv()` function intelligently searches for your `.env` file by **tr
 - ✅ Single `.env` file at project root serves entire codebase
 - ✅ Consistent across different subdirectories (`src/api/`, `src/services/`, etc.)
 
-**Alternative approaches:**
-
-```python
-# Simple approach - looks in current directory only
-load_dotenv()
-
-# Explicit path - requires exact location
-load_dotenv('.env')
-
-# With traversal - automatically finds .env in parent dirs (CURRENT APPROACH)
-load_dotenv(find_dotenv())
-```
-
-**Loading .env in terminal sessions:**
-
-If you need to load the `.env` file in your terminal session:
-
-```bash
-set -a; source .env; set +a
-```
-
 #### Option B: Export as Environment Variable
 
 **macOS/Linux:**
 
 ```bash
 export OPENAI_API_KEY=your-api-key-here
+export OPIK_API_KEY=your-opik-api-key-here
+export OPIK_PROJECT_NAME=food-image-analyzer
+export OPIK_WORKSPACE=your-opik-workspace
+export OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
 $env:OPENAI_API_KEY = "your-api-key-here"
+$env:OPIK_API_KEY = "your-opik-api-key-here"
 ```
 
-**Windows (Command Prompt):**
+### 5. Run Redis (Optional)
 
-```cmd
-set OPENAI_API_KEY=your-api-key-here
+If you want to enable caching, start a Redis server:
+
+```bash
+# Using Docker
+docker run -d -p 6379:6379 redis:latest
+
+# Or using Homebrew (macOS)
+brew services start redis
 ```
 
-### 5. Run the Application
+### 6. Run the Application
 
 #### FastAPI Server
 
@@ -178,15 +184,83 @@ docker build -t food-image-analyzer .
 docker run --rm -p 8000:8000 --env-file .env food-image-analyzer
 ```
 
-**API Endpoints:**
+## API Endpoints
 
-- `GET /` - Health check endpoint
-- `POST /ingredients` - Analyze image to extract ingredients
-  - Parameter: `image_url` (string) - URL of the food image
-  - Returns: List of ingredients with quantities
-- `POST /nutrients` - Calculate nutritional information
-  - Body: List of `Ingredient` objects
-  - Returns: Detailed nutritional analysis
+| Method | Endpoint       | Description                          |
+| ------ | -------------- | ------------------------------------ |
+| `GET`  | `/`            | Welcome message                      |
+| `GET`  | `/health`      | Health check endpoint                |
+| `POST` | `/ingredients` | Analyze image to extract ingredients |
+| `POST` | `/nutrients`   | Calculate nutritional information    |
+
+### POST `/ingredients`
+
+Analyze a food image to extract ingredients.
+
+**Request Body:**
+
+```json
+{
+  "image_url": "https://example.com/food-image.jpg",
+  "user_id": "user-123"
+}
+```
+
+**Response:**
+
+```json
+{
+  "status": "successful",
+  "processed_at": "2026-01-12T10:30:00Z",
+  "request": {
+    "image_url": "https://example.com/food-image.jpg",
+    "user_id": "user-123"
+  },
+  "response": {
+    "name": "Caesar Salad",
+    "ingredients": [
+      { "ingredient_name": "Romaine lettuce", "portiont": "2 cups" },
+      { "ingredient_name": "Parmesan cheese", "portiont": "30g" },
+      { "ingredient_name": "Croutons", "portiont": "1/2 cup" }
+    ]
+  },
+  "error": null
+}
+```
+
+### POST `/nutrients`
+
+Calculate nutritional information from ingredients.
+
+**Request Body:**
+
+```json
+{
+  "ingredients": [
+    { "ingredient_name": "Romaine lettuce", "portiont": "2 cups" },
+    { "ingredient_name": "Parmesan cheese", "portiont": "30g" }
+  ],
+  "user_id": "user-123"
+}
+```
+
+**Response:**
+
+```json
+{
+  "status": "successful",
+  "processed_at": "2026-01-12T10:30:00Z",
+  "request": { ... },
+  "response": {
+    "total_calories": 250,
+    "total_protein_g": 12.5,
+    "total_carbohydrates_g": 15.0,
+    "total_fats_g": 18.0,
+    "total_fiber_g": 3.5
+  },
+  "error": null
+}
+```
 
 **Interactive API Documentation:**
 
@@ -228,7 +302,7 @@ PYTHONPATH=. python main.py
 To make it permanent, add to your `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-export PYTHONPATH="${PYTHONPATH}:/Users/malihehnorouzi/Desktop/Projects/food-image-analyzer"
+export PYTHONPATH="${PYTHONPATH}:/path/to/food-image-analyzer"
 ```
 
 **Windows (PowerShell):**
@@ -237,25 +311,6 @@ export PYTHONPATH="${PYTHONPATH}:/Users/malihehnorouzi/Desktop/Projects/food-ima
 # run with PYTHONPATH inline
 $env:PYTHONPATH = "."; python main.py
 ```
-
-To make it permanent, add to your PowerShell profile:
-
-```powershell
-$env:PYTHONPATH = "C:\Users\YourUsername\Desktop\Projects\food-image-analyzer"
-```
-
-**Windows (Command Prompt):**
-
-```cmd
-# run with PYTHONPATH inline
-set PYTHONPATH=. && python main.py
-```
-
-To make it permanent, use System Environment Variables:
-
-1. Search for "Environment Variables" in Windows Settings
-2. Add or edit `PYTHONPATH` variable
-3. Set value to `C:\Users\YourUsername\Desktop\Projects\food-image-analyzer`
 
 ## Project Structure
 
@@ -278,26 +333,26 @@ food-image-analyzer/
 │   ├── api/                # FastAPI application
 │   │   ├── __init__.py     # Package initializer
 │   │   ├── app.py          # API endpoints and server setup
-│   │   └── schemas.py      # API request/response schemas
+│   │   └── schemas.py      # API request/response schemas (Pydantic models)
 │   └── services/           # Service modules
 │       ├── __init__.py     # Package initializer
 │       ├── analysis/       # Food analysis services
-│       │   ├── ingredients.py  # Ingredient analysis
-│       │   ├── nutrients.py    # Nutrient analysis
-│       │   └── schemas.py      # Data schemas
-│       ├── cache/          # Caching service
+│       │   ├── ingredients.py  # Ingredient detection using GPT Vision
+│       │   ├── nutrients.py    # Nutritional analysis
+│       │   └── schemas.py      # Data models (Ingredient, IngredientsResponse, NutrientsResponse)
+│       ├── cache/          # Redis caching service
 │       │   ├── __init__.py
-│       │   ├── client.py   # Cache client implementation
-│       │   └── config.py   # Cache configuration
+│       │   ├── client.py   # RedisService for get/set operations
+│       │   └── config.py   # Redis connection configuration
 │       ├── chat_gpt/       # OpenAI ChatGPT integration
 │       │   ├── __init__.py
-│       │   ├── config.py   # API configuration
-│       │   └── gpt.py      # GPT client
-│       ├── image_processing.py  # Image processing utilities
-│       ├── opik_tracing/   # Opik tracing integration
-│       │   ├── config.py   # Tracing configuration
-│       │   └── configure.py # Tracing setup
-│       └── prompts.py      # AI prompts and templates
+│       │   ├── config.py   # Default model configuration (gpt-4.1)
+│       │   └── gpt.py      # ChatGPT client with text, parsed, and image response methods
+│       ├── image_processing.py  # Image encoding utilities (base64)
+│       ├── opik_tracing/   # Opik observability integration
+│       │   ├── config.py   # Opik configuration settings
+│       │   └── configure.py # Opik setup and initialization
+│       └── prompts.py      # AI prompts for ingredient and nutrient analysis
 ├── tests/                  # Test suite
 │   ├── __init__.py
 │   ├── conftest.py         # Pytest fixtures and configuration
@@ -313,14 +368,18 @@ food-image-analyzer/
 └── uv.lock                 # Dependency lock file
 ```
 
-**Key Files:**
+### Key Components
 
-- **`.env`**: Environment variables (API keys) - auto-discovered via parent directory traversal
-- **`src/api/app.py`**: FastAPI REST API with ingredient and nutrient endpoints
-- **`main.py`**: Command-line interface for direct usage
-- **`src/services/analysis/`**: Core analysis logic for ingredients and nutrients
-- **`src/services/chat_gpt/`**: OpenAI API integration and configuration
-- **`tests/`**: Comprehensive test suite using pytest
+| Component                | Path                                   | Description                                       |
+| ------------------------ | -------------------------------------- | ------------------------------------------------- |
+| **API Layer**            | `src/api/`                             | FastAPI REST endpoints with Pydantic schemas      |
+| **Ingredients Analyzer** | `src/services/analysis/ingredients.py` | Uses GPT-4.1 Vision to detect food ingredients    |
+| **Nutrients Analyzer**   | `src/services/analysis/nutrients.py`   | Calculates nutritional values from ingredients    |
+| **ChatGPT Client**       | `src/services/chat_gpt/gpt.py`         | OpenAI API wrapper with structured output support |
+| **Redis Cache**          | `src/services/cache/`                  | Caching layer for analysis results                |
+| **Opik Tracing**         | `src/services/opik_tracing/`           | Observability and request tracing                 |
+| **Image Processing**     | `src/services/image_processing.py`     | Base64 encoding for images                        |
+| **Prompts**              | `src/services/prompts.py`              | AI prompts for analysis tasks                     |
 
 ### Using Jupyter Notebooks
 
@@ -365,9 +424,9 @@ uv run ruff format --check .
 Before committing code, run:
 
 ```bash
-uv run ruff check --fix .             # Automatically fix linting violations (unused imports, undefined names, bad patterns, style issues, etc.).
-uv run ruff format .                  # Format code (indentation, line length, quotes, wrapping, spacing) to ensure consistent style
-uv run ruff check --select I --fix    # Sort, remove, organize and groups import statements automatically
+uv run ruff check --fix .             # Automatically fix linting violations
+uv run ruff format .                  # Format code for consistent style
+uv run ruff check --select I --fix    # Sort and organize import statements
 ```
 
 ## Running Tests
@@ -391,6 +450,42 @@ uv run pytest -v
 ```bash
 uv run pytest tests/api/test_app.py
 ```
+
+### Run Tests with Coverage
+
+```bash
+uv run pytest --cov=src
+```
+
+## CI/CD
+
+This project uses GitHub Actions for continuous integration. Tests are automatically run on:
+
+- Push to `main` branch
+- Pull requests to `main` branch
+
+See `.github/workflows/tests.yml` for the workflow configuration.
+
+## Dependencies
+
+### Runtime Dependencies
+
+| Package             | Description                            |
+| ------------------- | -------------------------------------- |
+| `fastapi[standard]` | Modern web framework for building APIs |
+| `openai`            | OpenAI Python SDK for GPT models       |
+| `opik`              | Observability and tracing platform     |
+| `requests`          | HTTP library for image fetching        |
+
+### Development Dependencies
+
+| Package     | Description                      |
+| ----------- | -------------------------------- |
+| `ipykernel` | Jupyter notebook kernel          |
+| `loguru`    | Logging library                  |
+| `redis`     | Redis client for caching         |
+| `ruff`      | Fast Python linter and formatter |
+| `pytest`    | Testing framework                |
 
 ## License
 
