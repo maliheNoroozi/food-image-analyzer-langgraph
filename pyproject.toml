@@ -20,10 +20,6 @@ dev = [
     "pytest>=8.0.0",
 ]
 
-[tool.uv.scripts]
-test = "pytest"
-test-v = "pytest -v"
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
