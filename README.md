@@ -392,18 +392,6 @@ uv run pytest -v
 uv run pytest tests/api/test_app.py
 ```
 
-### Using UV Scripts
-
-The project also defines convenient test scripts in `pyproject.toml`:
-
-```bash
-# Run all tests
-uv run test
-
-# Run tests with verbose output
-uv run test-v
-```
-
 ## License
 
 See [LICENSE](LICENSE) for details.
