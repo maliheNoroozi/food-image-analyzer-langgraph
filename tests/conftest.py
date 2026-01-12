@@ -1,23 +1,22 @@
 """Shared pytest fixtures and configuration."""
 
+import os
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+
+# Set fake environment variables BEFORE any imports
+# This allows OpikConfig (pydantic-settings) to initialize without real values
+os.environ.setdefault("opik_api_key", "test-api-key")
+os.environ.setdefault("opik_project_name", "test-project")
+os.environ.setdefault("opik_workspace", "test-workspace")
+os.environ.setdefault("opik_url_override", "https://test.opik.com")
 
 # Add src directory to Python path for imports
 src_path = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-# Mock opik configuration before any imports that trigger it
-# This prevents the need for real environment variables during tests
-mock_opik_config = MagicMock()
-mock_opik_config.opik_api_key = "test-api-key"
-mock_opik_config.opik_project_name = "test-project"
-mock_opik_config.opik_workspace = "test-workspace"
-mock_opik_config.opik_url_override = "https://test.opik.com"
+# Now we can safely patch the configure function to prevent actual Opik initialization
+from unittest.mock import patch
 
-# Patch the config module before it gets imported by other modules
-patch("services.opik_tracing.config.opik_config", mock_opik_config).start()
-# Patch the configure function to do nothing
 patch("services.opik_tracing.configure.configure_opik", lambda: None).start()
 
