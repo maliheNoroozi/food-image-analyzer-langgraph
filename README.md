@@ -487,6 +487,141 @@ See `.github/workflows/tests.yml` for the workflow configuration.
 | `ruff`      | Fast Python linter and formatter |
 | `pytest`    | Testing framework                |
 
+## LLM Evaluation
+
+### What is LLM Evaluation?
+
+| Concept        | Meaning                                         |
+| -------------- | ----------------------------------------------- |
+| LLM Evaluation | Measuring AI output quality in a repeatable way |
+| Metric         | A test that checks one aspect of output quality |
+| Ground Truth   | The "correct" reference answer (when available) |
+
+> 🧠 **Mental model:** Metrics = automated tests for AI outputs
+
+### Types of Evaluation Metrics
+
+#### A) Heuristic Metrics (Rule-based)
+
+| Property      | Description                  |
+| ------------- | ---------------------------- |
+| Deterministic | Same input → same result     |
+| Rule-based    | Uses strings, regex, schemas |
+| Fast & cheap  | No LLM needed                |
+| Limitation    | Cannot judge meaning         |
+
+**Examples:**
+
+- `IsJson`
+- Structured Output Compliance
+- `RegexMatch`
+- `Contains` / `Equals`
+
+> 🧠 **Analogy:** Jest / TypeScript checks
+
+#### B) LLM-as-a-Judge Metrics (Semantic)
+
+| Property         | Description                 |
+| ---------------- | --------------------------- |
+| Uses another LLM | LLM reviews LLM output      |
+| Semantic         | Understands meaning         |
+| Human-like       | Similar to code review      |
+| Limitation       | Not perfectly deterministic |
+
+**Examples:**
+
+- **Hallucination** — Did the model make things up?
+- **Context Precision** — Did it use the given context correctly?
+- **Context Recall** — Did it cover all the important context?
+- **Usefulness** — Is the answer actually helpful?
+- **Relevance** — Does it answer what was asked?
+
+> 🧠 **Analogy:** Senior engineer review
+
+### Classification Outcomes (YES / NO Decisions)
+
+| Term                | Meaning           | Food App Example           |
+| ------------------- | ----------------- | -------------------------- |
+| True Positive (TP)  | Said YES, correct | Correctly detected peanuts |
+| False Positive (FP) | Said YES, wrong   | Hallucinated ingredient    |
+| True Negative (TN)  | Said NO, correct  | Correctly no peanuts       |
+| False Negative (FN) | Said NO, wrong    | Missed allergen            |
+
+> 🧠 **Rule:**
+>
+> - Positive / Negative → what model says
+> - True / False → correctness
+
+### Core Classification Metrics (Trust vs Coverage)
+
+#### Precision (Hallucination Control)
+
+| Aspect         | Meaning                    |
+| -------------- | -------------------------- |
+| Focus          | False Positives            |
+| Question       | "Can I trust YES answers?" |
+| High precision | Few hallucinations         |
+
+**Formula:**
+
+$$\text{Precision} = \frac{TP}{TP + FP}$$
+
+> 🧠 **Precision** = Don't make things up
+
+#### Recall (Miss Control)
+
+| Aspect      | Meaning                       |
+| ----------- | ----------------------------- |
+| Focus       | False Negatives               |
+| Question    | "Did I catch all real cases?" |
+| High recall | Few misses                    |
+
+**Formula:**
+
+$$\text{Recall} = \frac{TP}{TP + FN}$$
+
+> 🧠 **Recall** = Don't miss real things
+
+### Numeric Error Metrics (Regression)
+
+Used when output is a number, not YES/NO.
+
+#### MAE — Mean Absolute Error
+
+| Property              | Description                |
+| --------------------- | -------------------------- |
+| Treats errors equally | 20 off = 50 off (linearly) |
+| Easy to explain       | Average mistake size       |
+
+**Formula:**
+
+$$\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|$$
+
+> 📌 Calories off by ~30 kcal
+
+#### RMSE — Root Mean Squared Error
+
+| Property             | Description              |
+| -------------------- | ------------------------ |
+| Penalizes big errors | Large mistakes hurt more |
+| Safety-oriented      | Good for health data     |
+
+**Formula:**
+
+$$\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}$$
+
+> 📌 Predicting 1200 instead of 500 is punished hard
+
+### Mapping to Your Food App
+
+| Goal                 | Metric Type              |
+| -------------------- | ------------------------ |
+| App doesn't crash    | IsJson, Schema           |
+| No fake ingredients  | Precision, Hallucination |
+| Don't miss allergens | Recall                   |
+| Reasonable calories  | MAE / RMSE               |
+| Trustworthy answers  | Usefulness               |
+
 ## License
 
 See [LICENSE](LICENSE) for details.
