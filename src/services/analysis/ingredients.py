@@ -20,7 +20,11 @@ class IngredientsAnalyzer:
             base64_image = encode_image_by_url(image_url)
             image_hash = hashlib.sha256(base64_image.encode()).hexdigest()
             cache_key = f"ingredients:{image_hash}"
-            cached_result = self.redis_server.get(cache_key)
+            cached_result = None
+            try:
+                cached_result = self.redis_server.get(cache_key)
+            except Exception as error:
+                logger.warning(f"Cache read failed for key {cache_key}: {error}")
             if cached_result:
                 return IngredientsResponse.model_validate_json(cached_result)
             result = self.chat_gpt.generate_image_response_by_base64_image(
@@ -30,7 +34,10 @@ class IngredientsAnalyzer:
                 base64_image=base64_image,
                 response_format=IngredientsResponse,
             )
-            self.redis_server.set(cache_key, result.model_dump_json())
+            try:
+                self.redis_server.set(cache_key, result.model_dump_json())
+            except Exception as error:
+                logger.warning(f"Cache write failed for key {cache_key}: {error}")
             return result
         except Exception as error:
             logger.error(f"Error analyzing ingredients: {error}")
