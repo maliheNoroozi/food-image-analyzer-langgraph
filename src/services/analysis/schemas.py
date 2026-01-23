@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 class Ingredient(BaseModel):
     ingredient_name: str
-    portiont: str
+    portion: str
 
 
 class IngredientsResponse(BaseModel):
@@ -12,7 +12,7 @@ class IngredientsResponse(BaseModel):
 
 
 class NutrientsResponse(BaseModel):
-    total_calories: int
+    total_calories: float = Field(description="Total calories in kcal")
     total_protein_g: float = Field(description="Total protein in grams")
     total_carbohydrates_g: float = Field(description="Total carbohydrates in grams")
     total_fats_g: float = Field(description="Total fats in grams")
