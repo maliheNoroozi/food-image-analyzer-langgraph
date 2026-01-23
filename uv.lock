@@ -614,34 +614,34 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
+    { name = "loguru" },
     { name = "openai" },
     { name = "opik" },
+    { name = "redis" },
     { name = "requests" },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "ipykernel" },
-    { name = "loguru" },
     { name = "pytest" },
-    { name = "redis" },
     { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.124.4" },
+    { name = "loguru", specifier = ">=0.7.3" },
     { name = "openai", specifier = ">=2.8.1" },
     { name = "opik", specifier = ">=1.9.60" },
+    { name = "redis", specifier = ">=7.1.0" },
     { name = "requests", specifier = ">=2.32.5" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "ipykernel", specifier = ">=7.1.0" },
-    { name = "loguru", specifier = ">=0.7.3" },
     { name = "pytest", specifier = ">=8.0.0" },
-    { name = "redis", specifier = ">=7.1.0" },
     { name = "ruff", specifier = ">=0.14.8" },
 ]
 

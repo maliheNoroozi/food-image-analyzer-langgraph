@@ -6,16 +6,16 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.124.4",
+    "loguru>=0.7.3",
     "openai>=2.8.1",
     "opik>=1.9.60",
+    "redis>=7.1.0",
     "requests>=2.32.5",
 ]
 
 [dependency-groups]
 dev = [
     "ipykernel>=7.1.0",
-    "loguru>=0.7.3",
-    "redis>=7.1.0",
     "ruff>=0.14.8",
     "pytest>=8.0.0",
 ]
