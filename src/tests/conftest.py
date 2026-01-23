@@ -3,6 +3,7 @@
 import os
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 # Set fake environment variables BEFORE any imports
 # This allows configs to initialize without real values
@@ -17,8 +18,6 @@ src_path = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
 # Now we can safely patch external services to prevent actual initialization
-from unittest.mock import MagicMock, patch
-
 # Mock Opik configuration
 patch("services.opik_tracing.configure.configure_opik", lambda: None).start()
 

@@ -50,7 +50,9 @@ class TestNutrientsAnalyzer:
         """Test that cached results are returned without calling ChatGPT."""
         # Arrange
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_nutrients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_nutrients_response.model_dump_json()
+        )
         mock_chatgpt_instance = mock_chatgpt_class.return_value
 
         analyzer = NutrientsAnalyzer()
@@ -125,7 +127,9 @@ class TestNutrientsAnalyzer:
         analyzer.analyze(sample_ingredients)
 
         # Assert
-        ingredients_str = "\n".join([str(ingredient) for ingredient in sample_ingredients])
+        ingredients_str = "\n".join(
+            [str(ingredient) for ingredient in sample_ingredients]
+        )
         expected_user_prompt = FoodImageAnalyzerPrompts.NUTRIENT_USER_PROMPT.format(
             ingredients_list=ingredients_str
         )
@@ -148,7 +152,9 @@ class TestNutrientsAnalyzer:
         """Test that the same ingredients always produce the same cache key."""
         # Arrange
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_nutrients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_nutrients_response.model_dump_json()
+        )
 
         analyzer = NutrientsAnalyzer()
 
@@ -172,7 +178,9 @@ class TestNutrientsAnalyzer:
         """Test that different ingredients produce different cache keys."""
         # Arrange
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_nutrients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_nutrients_response.model_dump_json()
+        )
 
         ingredients_1 = [
             Ingredient(ingredient_name="Chicken", portion="100g"),
@@ -287,7 +295,9 @@ class TestNutrientsAnalyzer:
         """Test that cached JSON is properly deserialized to NutrientsResponse."""
         # Arrange
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_nutrients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_nutrients_response.model_dump_json()
+        )
 
         analyzer = NutrientsAnalyzer()
 
@@ -344,7 +354,9 @@ class TestNutrientsAnalyzer:
         """Test that ingredient order affects the cache key."""
         # Arrange
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_nutrients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_nutrients_response.model_dump_json()
+        )
 
         ingredients_order_1 = [
             Ingredient(ingredient_name="Chicken", portion="100g"),
