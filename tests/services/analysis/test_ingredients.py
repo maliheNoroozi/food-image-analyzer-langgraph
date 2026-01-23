@@ -16,9 +16,9 @@ class TestIngredientsAnalyzer:
         return IngredientsResponse(
             name="Caesar Salad",
             ingredients=[
-                Ingredient(ingredient_name="Romaine lettuce", portiont="2 cups"),
-                Ingredient(ingredient_name="Parmesan cheese", portiont="1/4 cup"),
-                Ingredient(ingredient_name="Croutons", portiont="1/2 cup"),
+                Ingredient(ingredient_name="Romaine lettuce", portion="200g"),
+                Ingredient(ingredient_name="Parmesan cheese", portion="30g"),
+                Ingredient(ingredient_name="Croutons", portion="40g"),
             ],
         )
 
@@ -256,17 +256,25 @@ class TestIngredientsAnalyzer:
         mock_encode: MagicMock,
         mock_base64_image: str,
     ):
-        """Test that exceptions from Redis get are propagated."""
+        """Test that Redis get failures fall back to ChatGPT."""
         # Arrange
         mock_encode.return_value = mock_base64_image
         mock_redis_instance = mock_redis_class.return_value
         mock_redis_instance.get.side_effect = Exception("Redis connection error")
+        mock_chatgpt_instance = mock_chatgpt_class.return_value
+        mock_chatgpt_instance.generate_image_response_by_base64_image.return_value = (
+            IngredientsResponse(name="Toast", ingredients=[])
+        )
 
         analyzer = IngredientsAnalyzer()
 
-        # Act & Assert
-        with pytest.raises(Exception, match="Redis connection error"):
-            analyzer.analyze("http://example.com/food.jpg")
+        # Act
+        result = analyzer.analyze("http://example.com/food.jpg")
+
+        # Assert
+        mock_chatgpt_instance.generate_image_response_by_base64_image.assert_called_once()
+        mock_redis_instance.set.assert_called_once()
+        assert isinstance(result, IngredientsResponse)
 
     @patch("services.analysis.ingredients.encode_image_by_url")
     @patch("services.analysis.ingredients.RedisService")
@@ -295,5 +303,5 @@ class TestIngredientsAnalyzer:
         assert result.name == "Caesar Salad"
         assert len(result.ingredients) == 3
         assert result.ingredients[0].ingredient_name == "Romaine lettuce"
-        assert result.ingredients[0].portiont == "2 cups"
+        assert result.ingredients[0].portion == "200g"
 
