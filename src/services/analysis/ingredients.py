@@ -13,7 +13,7 @@ from services.prompts import FoodImageAnalyzerPrompts
 class IngredientsAnalyzer:
     def __init__(self):
         self.chat_gpt = ChatGPT()
-        self.redis_server = RedisService()
+        self.redis_service = RedisService()
 
     def analyze(self, image_url: str) -> IngredientsResponse:
         try:
@@ -22,9 +22,9 @@ class IngredientsAnalyzer:
             cache_key = f"ingredients:{image_hash}"
             cached_result = None
             try:
-                cached_result = self.redis_server.get(cache_key)
+                cached_result = self.redis_service.get(cache_key)
             except Exception as error:
-                logger.warning(f"Cache read failed for key {cache_key}: {error}")
+                logger.error(f"Cache read failed for key {cache_key}: {error}")
             if cached_result:
                 return IngredientsResponse.model_validate_json(cached_result)
             result = self.chat_gpt.generate_image_response_by_base64_image(
@@ -35,9 +35,9 @@ class IngredientsAnalyzer:
                 response_format=IngredientsResponse,
             )
             try:
-                self.redis_server.set(cache_key, result.model_dump_json())
+                self.redis_service.set(cache_key, result.model_dump_json())
             except Exception as error:
-                logger.warning(f"Cache write failed for key {cache_key}: {error}")
+                logger.error(f"Cache write failed for key {cache_key}: {error}")
             return result
         except Exception as error:
             logger.error(f"Error analyzing ingredients: {error}")
