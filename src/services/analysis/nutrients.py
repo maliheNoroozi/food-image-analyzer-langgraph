@@ -1,3 +1,5 @@
+import hashlib
+
 from loguru import logger
 
 from services.analysis.schemas import Ingredient, NutrientsResponse
@@ -10,19 +12,19 @@ from services.prompts import FoodImageAnalyzerPrompts
 class NutrientsAnalyzer:
     def __init__(self):
         self.chat_gpt = ChatGPT()
-        self.redis_server = RedisService()
+        self.redis_service = RedisService()
 
     def analyze(self, ingredients: list[Ingredient]) -> NutrientsResponse:
         try:
             ingredients_key = "_".join(
-                [f"{i.ingredient_name}:{i.portiont}" for i in ingredients]
+                [f"{i.ingredient_name}:{i.portion}" for i in ingredients]
             )
             cache_key = f"nutrients:{ingredients_key}"
             cached_result = None
             try:
-                cached_result = self.redis_server.get(cache_key)
+                cached_result = self.redis_service.get(cache_key)
             except Exception as error:
-                logger.warning(f"Cache read failed for key {cache_key}: {error}")
+                logger.error(f"Cache read failed for key {cache_key}: {error}")
             if cached_result:
                 return NutrientsResponse.model_validate_json(cached_result)
             ingredients_str = "\n".join([str(ingredient) for ingredient in ingredients])
@@ -36,9 +38,9 @@ class NutrientsAnalyzer:
                 response_format=NutrientsResponse,
             )
             try:
-                self.redis_server.set(cache_key, result.model_dump_json())
+                self.redis_service.set(cache_key, result.model_dump_json())
             except Exception as error:
-                logger.warning(f"Cache write failed for key {cache_key}: {error}")
+                logger.error(f"Cache write failed for key {cache_key}: {error}")
             return result
         except Exception as error:
             logger.error(f"Error analyzing nutrients: {error}")
