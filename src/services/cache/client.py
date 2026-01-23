@@ -1,5 +1,7 @@
+from typing import Optional
 from loguru import logger
 from redis import Redis
+from redis.exceptions import RedisError
 
 from services.cache.config import redis_config
 
@@ -13,18 +15,23 @@ class RedisService:
             decode_responses=True,
         )
 
-    def get(self, key: str) -> str:
+    def get(self, key: str) -> Optional[str]:
         try:
-            result = self.redis.get(key)
-            logger.info(f"Cached result found for key {key}")
-            return result
-        except Exception as error:
-            logger.error(f"Key {key} not found in redis cache: {error}")
+            value = self.redis.get(key)
+            if value is not None:
+                logger.info("Cache hit")
+            else:
+                logger.info("Cache miss")
+            return value
+        except RedisError as error:
+            logger.error(f"Redis error retrieving key: {error}")
+            return None
 
-    def set(self, key: str, value: str) -> None:
+    def set(self, key: str, value: str) -> bool:
         try:
-            result = self.redis.set(key, value)
-            logger.info(f"Setting result for key {key}")
-            return result
-        except Exception as error:
-            logger.error(f"Could not set key {key}: {error}")
+            self.redis.set(key, value)
+            logger.info("Successfully set cache value")
+            return True
+        except RedisError as error:
+            logger.error(f"Redis error setting key: {error}")
+            return False

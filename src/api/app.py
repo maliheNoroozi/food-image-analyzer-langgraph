@@ -14,12 +14,11 @@ from services.analysis.ingredients import IngredientsAnalyzer
 from services.analysis.nutrients import NutrientsAnalyzer
 from services.opik_tracing.configure import configure_opik
 
-load_dotenv(find_dotenv())  # Must run BEFORE importing opik
+load_dotenv(find_dotenv())
 configure_opik()
 app = FastAPI()
 ingredients_analyzer = IngredientsAnalyzer()
 nutrients_analyzer = NutrientsAnalyzer()
-
 
 @app.get("/")
 def root():
