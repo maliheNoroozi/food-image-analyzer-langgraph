@@ -151,7 +151,7 @@ If you want to enable caching, start a Redis server:
 
 ```bash
 # Using Docker
-docker run -d -p 6379:6379 redis:latest
+docker run --rm -d -p 6379:6379 redis:latest
 
 # Or using Homebrew (macOS)
 brew services start redis
@@ -183,6 +183,23 @@ docker build -t food-image-analyzer .
 ```bash
 docker run --rm -p 8000:8000 --env-file .env food-image-analyzer
 ```
+
+#### Docker Compose
+
+The compose file runs the API and Redis together. Make sure your `.env` is present
+before starting the stack.
+
+```bash
+# Build and start the stack
+docker compose up --build -d
+
+# Stop and remove containers
+docker compose down
+
+# Follow logs (service names: food-image-analyzer, redis)
+docker compose logs -f food-image-analyzer
+```
+
 
 ## API Endpoints
 
@@ -323,6 +340,7 @@ food-image-analyzer/
 ├── .gitignore              # Git ignore patterns
 ├── .python-version         # Python version specification
 ├── Dockerfile              # Docker container configuration
+├── docker-compose.yml      # Docker Compose stack (API + Redis)
 ├── LICENSE                 # Project license
 ├── main.py                 # Command-line application entry point
 ├── notebooks/              # Jupyter notebooks for research
@@ -404,19 +422,19 @@ uv run ruff check .
 **Auto-fix linting issues:**
 
 ```bash
-uv run ruff check --fix .
+uv run ruff check --fix . --exclude notebooks/
 ```
 
 **Format code:**
 
 ```bash
-uv run ruff format .
+uv run ruff format . --exclude notebooks/
 ```
 
 **Check formatting (without making changes):**
 
 ```bash
-uv run ruff format --check .
+uv run ruff format --check . --exclude notebooks/
 ```
 
 ### Recommended Workflow
@@ -424,9 +442,9 @@ uv run ruff format --check .
 Before committing code, run:
 
 ```bash
-uv run ruff check --fix .             # Automatically fix linting violations
-uv run ruff format .                  # Format code for consistent style
-uv run ruff check --select I --fix    # Sort and organize import statements
+uv run ruff check --fix . --exclude notebooks/            # Automatically fix linting violations
+uv run ruff format . --exclude notebooks/               # Format code for consistent style
+uv run ruff check --select I --fix --exclude notebooks/    # Sort and organize import statements
 ```
 
 ## Running Tests
