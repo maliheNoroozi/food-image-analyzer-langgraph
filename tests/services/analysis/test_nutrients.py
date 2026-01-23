@@ -13,9 +13,9 @@ class TestNutrientsAnalyzer:
     def sample_ingredients(self) -> list[Ingredient]:
         """Create sample ingredients for testing."""
         return [
-            Ingredient(ingredient_name="Chicken breast", portiont="150g"),
-            Ingredient(ingredient_name="Brown rice", portiont="1 cup"),
-            Ingredient(ingredient_name="Broccoli", portiont="1 cup"),
+            Ingredient(ingredient_name="Chicken breast", portion="150g"),
+            Ingredient(ingredient_name="Brown rice", portion="150g"),
+            Ingredient(ingredient_name="Broccoli", portion="100g"),
         ]
 
     @pytest.fixture
@@ -33,7 +33,7 @@ class TestNutrientsAnalyzer:
     def expected_cache_key(self, sample_ingredients: list[Ingredient]) -> str:
         """Return the expected cache key for the sample ingredients."""
         ingredients_key = "_".join(
-            [f"{i.ingredient_name}:{i.portiont}" for i in sample_ingredients]
+            [f"{i.ingredient_name}:{i.portion}" for i in sample_ingredients]
         )
         return f"nutrients:{ingredients_key}"
 
@@ -175,10 +175,10 @@ class TestNutrientsAnalyzer:
         mock_redis_instance.get.return_value = sample_nutrients_response.model_dump_json()
 
         ingredients_1 = [
-            Ingredient(ingredient_name="Chicken", portiont="100g"),
+            Ingredient(ingredient_name="Chicken", portion="100g"),
         ]
         ingredients_2 = [
-            Ingredient(ingredient_name="Beef", portiont="100g"),
+            Ingredient(ingredient_name="Beef", portion="100g"),
         ]
 
         analyzer = NutrientsAnalyzer()
@@ -224,16 +224,28 @@ class TestNutrientsAnalyzer:
         mock_redis_class: MagicMock,
         sample_ingredients: list[Ingredient],
     ):
-        """Test that exceptions from Redis get are propagated."""
+        """Test that Redis get failures fall back to ChatGPT."""
         # Arrange
         mock_redis_instance = mock_redis_class.return_value
         mock_redis_instance.get.side_effect = Exception("Redis connection error")
+        mock_chatgpt_instance = mock_chatgpt_class.return_value
+        mock_chatgpt_instance.generate_parsed_response.return_value = NutrientsResponse(
+            total_calories=100,
+            total_protein_g=10.0,
+            total_carbohydrates_g=5.0,
+            total_fats_g=2.0,
+            total_fiber_g=1.0,
+        )
 
         analyzer = NutrientsAnalyzer()
 
-        # Act & Assert
-        with pytest.raises(Exception, match="Redis connection error"):
-            analyzer.analyze(sample_ingredients)
+        # Act
+        result = analyzer.analyze(sample_ingredients)
+
+        # Assert
+        mock_chatgpt_instance.generate_parsed_response.assert_called_once()
+        mock_redis_instance.set.assert_called_once()
+        assert isinstance(result, NutrientsResponse)
 
     @patch("services.analysis.nutrients.RedisService")
     @patch("services.analysis.nutrients.ChatGPT")
@@ -244,7 +256,7 @@ class TestNutrientsAnalyzer:
         sample_ingredients: list[Ingredient],
         sample_nutrients_response: NutrientsResponse,
     ):
-        """Test that exceptions from Redis set are propagated."""
+        """Test that Redis set failures do not prevent responses."""
         # Arrange
         mock_redis_instance = mock_redis_class.return_value
         mock_redis_instance.get.return_value = None
@@ -257,9 +269,11 @@ class TestNutrientsAnalyzer:
 
         analyzer = NutrientsAnalyzer()
 
-        # Act & Assert
-        with pytest.raises(Exception, match="Redis write error"):
-            analyzer.analyze(sample_ingredients)
+        # Act
+        result = analyzer.analyze(sample_ingredients)
+
+        # Assert
+        assert result == sample_nutrients_response
 
     @patch("services.analysis.nutrients.RedisService")
     @patch("services.analysis.nutrients.ChatGPT")
@@ -333,12 +347,12 @@ class TestNutrientsAnalyzer:
         mock_redis_instance.get.return_value = sample_nutrients_response.model_dump_json()
 
         ingredients_order_1 = [
-            Ingredient(ingredient_name="Chicken", portiont="100g"),
-            Ingredient(ingredient_name="Rice", portiont="1 cup"),
+            Ingredient(ingredient_name="Chicken", portion="100g"),
+            Ingredient(ingredient_name="Rice", portion="150g"),
         ]
         ingredients_order_2 = [
-            Ingredient(ingredient_name="Rice", portiont="1 cup"),
-            Ingredient(ingredient_name="Chicken", portiont="100g"),
+            Ingredient(ingredient_name="Rice", portion="150g"),
+            Ingredient(ingredient_name="Chicken", portion="100g"),
         ]
 
         analyzer = NutrientsAnalyzer()
@@ -361,7 +375,7 @@ class TestNutrientsAnalyzer:
     ):
         """Test analysis with a single ingredient."""
         # Arrange
-        single_ingredient = [Ingredient(ingredient_name="Apple", portiont="1 medium")]
+        single_ingredient = [Ingredient(ingredient_name="Apple", portion="1 medium")]
         expected_response = NutrientsResponse(
             total_calories=95,
             total_protein_g=0.5,
