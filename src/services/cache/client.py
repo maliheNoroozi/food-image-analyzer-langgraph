@@ -1,4 +1,5 @@
 from typing import Optional
+
 from loguru import logger
 from redis import Redis
 from redis.exceptions import RedisError
