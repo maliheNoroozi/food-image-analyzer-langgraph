@@ -45,8 +45,8 @@ class TestIngredientsEndpoint:
         return IngredientsResponse(
             name="Caesar Salad",
             ingredients=[
-                Ingredient(ingredient_name="Romaine lettuce", portiont="2 cups"),
-                Ingredient(ingredient_name="Parmesan cheese", portiont="1/4 cup"),
+                Ingredient(ingredient_name="Romaine lettuce", portion="200g"),
+                Ingredient(ingredient_name="Parmesan cheese", portion="30g"),
             ],
         )
 
@@ -177,8 +177,8 @@ class TestNutrientsEndpoint:
         """Create a valid request payload."""
         return {
             "ingredients": [
-                {"ingredient_name": "Chicken breast", "portiont": "150g"},
-                {"ingredient_name": "Brown rice", "portiont": "1 cup"},
+                {"ingredient_name": "Chicken breast", "portion": "150g"},
+                {"ingredient_name": "Brown rice", "portion": "150g"},
             ],
             "user_id": "user123",
         }
@@ -253,7 +253,7 @@ class TestNutrientsEndpoint:
             "/nutrients",
             json={
                 "ingredients": [
-                    {"ingredient_name": "Chicken", "portiont": "100g"},
+                    {"ingredient_name": "Chicken", "portion": "100g"},
                 ]
             },
         )
@@ -331,6 +331,6 @@ class TestNutrientsEndpoint:
         ingredients = call_kwargs["ingredients"]
         assert len(ingredients) == 2
         assert ingredients[0].ingredient_name == "Chicken breast"
-        assert ingredients[0].portiont == "150g"
+        assert ingredients[0].portion == "150g"
         assert ingredients[1].ingredient_name == "Brown rice"
-        assert ingredients[1].portiont == "1 cup"
+        assert ingredients[1].portion == "150g"
