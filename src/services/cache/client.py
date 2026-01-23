@@ -15,16 +15,16 @@ class RedisService:
 
     def get(self, key: str) -> str:
         try:
+            result = self.redis.get(key)
             logger.info(f"Cached result found for key {key}")
-            return self.redis.get(key)
+            return result
         except Exception as error:
-            logger.error(f"Error getting key {key}: {error}")
-            raise error
+            logger.error(f"Key {key} not found in redis cache: {error}")
 
     def set(self, key: str, value: str) -> None:
         try:
+            result = self.redis.set(key, value)
             logger.info(f"Setting result for key {key}")
-            return self.redis.set(key, value)
+            return result
         except Exception as error:
-            logger.error(f"Error setting key {key}: {error}")
-            raise error
+            logger.error(f"Could not set key {key}: {error}")
