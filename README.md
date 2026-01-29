@@ -648,8 +648,8 @@ Run the evaluation module from the project root.
 Docker Compose:
 
 ```
-docker compose run --rm food-image-analyzer \
-  uv run python -m evaluation.run_evaluation
+docker compose up --build -d \
+cd src &&  uv run python -m evaluation.run_evaluation
 ```
 
 Host (local Python):
