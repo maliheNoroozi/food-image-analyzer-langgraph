@@ -20,6 +20,7 @@ app = FastAPI()
 ingredients_analyzer = IngredientsAnalyzer()
 nutrients_analyzer = NutrientsAnalyzer()
 
+
 @app.get("/")
 def root():
     return {"message": "Welcome to the Food Image Analyzer API"}

@@ -92,6 +92,8 @@ REDIS_PORT=6379
 REDIS_DB=0
 ```
 
+When using Docker Compose, set `REDIS_HOST=redis` in `.env` (service name). When running on the host, keep `REDIS_HOST=localhost`.
+
 **Understanding Environment Variable Loading:**
 
 load it in your terminal session:
@@ -199,7 +201,6 @@ docker compose down
 # Follow logs (service names: food-image-analyzer, redis)
 docker compose logs -f food-image-analyzer
 ```
-
 
 ## API Endpoints
 
@@ -639,6 +640,23 @@ $$\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}$$
 | Don't miss allergens | Recall                   |
 | Reasonable calories  | MAE / RMSE               |
 | Trustworthy answers  | Usefulness               |
+
+## Run evaluation
+
+Run the evaluation module from the project root.
+
+Docker Compose:
+
+```
+docker compose up --build -d \
+cd src &&  uv run python -m evaluation.run_evaluation
+```
+
+Host (local Python):
+
+```
+uv run python -m evaluation.run_evaluation
+```
 
 ## License
 

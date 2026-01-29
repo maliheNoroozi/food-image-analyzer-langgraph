@@ -50,7 +50,9 @@ class TestIngredientsAnalyzer:
         image_url = "http://example.com/food.jpg"
         mock_encode.return_value = mock_base64_image
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_ingredients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_ingredients_response.model_dump_json()
+        )
         mock_chatgpt_instance = mock_chatgpt_class.return_value
 
         analyzer = IngredientsAnalyzer()
@@ -158,7 +160,9 @@ class TestIngredientsAnalyzer:
         # Arrange
         mock_encode.return_value = mock_base64_image
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_ingredients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_ingredients_response.model_dump_json()
+        )
 
         analyzer = IngredientsAnalyzer()
 
@@ -184,7 +188,9 @@ class TestIngredientsAnalyzer:
         """Test that different images produce different cache keys."""
         # Arrange
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_ingredients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_ingredients_response.model_dump_json()
+        )
 
         # Return different base64 for different calls
         mock_encode.side_effect = ["image_data_1", "image_data_2"]
@@ -236,8 +242,8 @@ class TestIngredientsAnalyzer:
         mock_redis_instance.get.return_value = None
 
         mock_chatgpt_instance = mock_chatgpt_class.return_value
-        mock_chatgpt_instance.generate_image_response_by_base64_image.side_effect = Exception(
-            "OpenAI API error"
+        mock_chatgpt_instance.generate_image_response_by_base64_image.side_effect = (
+            Exception("OpenAI API error")
         )
 
         analyzer = IngredientsAnalyzer()
@@ -291,7 +297,9 @@ class TestIngredientsAnalyzer:
         # Arrange
         mock_encode.return_value = mock_base64_image
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_ingredients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_ingredients_response.model_dump_json()
+        )
 
         analyzer = IngredientsAnalyzer()
 
@@ -304,4 +312,3 @@ class TestIngredientsAnalyzer:
         assert len(result.ingredients) == 3
         assert result.ingredients[0].ingredient_name == "Romaine lettuce"
         assert result.ingredients[0].portion == "200g"
-

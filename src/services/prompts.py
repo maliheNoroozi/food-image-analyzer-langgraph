@@ -23,28 +23,8 @@ Ingredients:
 {ingredients_list}
 """
 
-    SCORE_INGREDIENTS_SYSTEM_PROMPT = """
-You are a helpful assistant that scores the accuracy of the ingredients extracted from a food image.
-"""
-
-    SCORE_INGREDIENTS_USER_PROMPT = """
-Score the accuracy of the ingredients extracted from a food image.
-The ingredients are:
-{ingredients_list}
-The expected ingredients are:
-{expected_ingredients_list}
-Return the score in a JSON with {score_response_format} format.
-"""
-
-    SCORE_NUTRIENTS_SYSTEM_PROMPT = """
-You are a helpful assistant that scores the accuracy of the nutrients extracted from a food image.
-"""
-
-    SCORE_NUTRIENTS_USER_PROMPT = """
-Score the accuracy of the nutrients extracted from a food image.
-The nutrients are:
-{nutrients_list}
-The expected nutrients are:
-{expected_nutrients_list}
-Return the score in a JSON with {score_response_format} format.
+    EVALUATION_SYSTEM_PROMPT = "You are an impartial expert judge."
+    EVALUATION_INGREDIENTS_USER_PROMPT = """\
+Given the predicted ingredients: {predicted_ingredients} and the ground truth ingredients: {expected_ingredients}, 
+calculate the true positives (tp), false positives (fp), and false negatives (fn).
 """

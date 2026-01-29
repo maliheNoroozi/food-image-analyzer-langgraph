@@ -13,7 +13,7 @@ class IngredientsResponse(BaseModel):
 
 class NutrientsResponse(BaseModel):
     total_calories: float = Field(description="Total calories in kcal")
-    total_protein_g: float = Field(description="Total protein in grams")
     total_carbohydrates_g: float = Field(description="Total carbohydrates in grams")
+    total_protein_g: float = Field(description="Total protein in grams")
     total_fats_g: float = Field(description="Total fats in grams")
     total_fiber_g: float = Field(description="Total fiber in grams")

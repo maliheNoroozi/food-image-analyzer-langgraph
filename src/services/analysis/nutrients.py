@@ -1,5 +1,3 @@
-import hashlib
-
 from loguru import logger
 
 from services.analysis.schemas import Ingredient, NutrientsResponse
