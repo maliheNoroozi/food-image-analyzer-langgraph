@@ -292,7 +292,7 @@ food-image-analyzer/
 │       │   └── config.py   # Redis connection configuration
 │       ├── database/       # MongoDB persistence service
 │       │   ├── __init__.py
-│       │   ├── client.py   # MongoDB client and CRUD operations
+│       │   ├── client.py   # MongoDBService and CRUD operations
 │       │   └── config.py   # MongoDB connection configuration
 │       ├── chat_gpt/       # OpenAI ChatGPT integration
 │       │   ├── __init__.py
