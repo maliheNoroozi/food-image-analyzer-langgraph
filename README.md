@@ -73,6 +73,7 @@ uv add --dev package-name
 ```
 
 When using Docker Compose, set `REDIS_HOST=redis` and `MONGODB_HOST=mongodb` in `.env` (service names). When running on the host, keep `REDIS_HOST=localhost` and `MONGODB_HOST=localhost`.
+
 ### 4. Run Redis (Optional)
 
 If you want to enable caching, start a Redis server:
@@ -289,6 +290,10 @@ food-image-analyzer/
 │       │   ├── __init__.py
 │       │   ├── client.py   # RedisService for get/set operations
 │       │   └── config.py   # Redis connection configuration
+│       ├── database/       # MongoDB persistence service
+│       │   ├── __init__.py
+│       │   ├── client.py   # MongoDB client and CRUD operations
+│       │   └── config.py   # MongoDB connection configuration
 │       ├── chat_gpt/       # OpenAI ChatGPT integration
 │       │   ├── __init__.py
 │       │   ├── config.py   # Default model configuration (gpt-4.1)
