@@ -9,6 +9,7 @@ dependencies = [
     "loguru>=0.7.3",
     "openai>=2.8.1",
     "opik>=1.9.60",
+    "pymongo>=4.16.0",
     "redis>=7.1.0",
     "requests>=2.32.5",
 ]

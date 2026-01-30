@@ -13,10 +13,12 @@ from api.schemas import (
 from services.analysis.ingredients import IngredientsAnalyzer
 from services.analysis.nutrients import NutrientsAnalyzer
 from services.opik_tracing.configure import configure_opik
+from services.database.client import MongoDBService
 
 load_dotenv(find_dotenv())
 configure_opik()
 app = FastAPI()
+mongodb_service = MongoDBService()
 ingredients_analyzer = IngredientsAnalyzer()
 nutrients_analyzer = NutrientsAnalyzer()
 
@@ -35,39 +37,50 @@ def health_check():
 def ingredients(request: IngredientsEndpointRequest) -> IngredientsEndpointResponse:
     try:
         result = ingredients_analyzer.analyze(image_url=request.image_url)
-        return IngredientsEndpointResponse(
+        response = IngredientsEndpointResponse(
             status=Status.SUCCESSFUL,
             processed_at=datetime.utcnow(),
             request=request,
             response=result,
             error=None,
         )
+        mongodb_service.insert_one("ingredients-analyzer", response.model_dump(mode="json"))
+        return response
     except Exception as error:
-        return IngredientsEndpointResponse(
+        response = IngredientsEndpointResponse(
             status=Status.FAILED,
             processed_at=datetime.utcnow(),
             request=request,
             response=None,
             error=str(error),
         )
+        mongodb_service.insert_one("ingredients-analyzer", response.model_dump(mode="json"))
+        return response
 
 
 @app.post("/nutrients")
 def nutrients(request: NutrientsEndpointRequest) -> NutrientsEndpointResponse:
     try:
         result = nutrients_analyzer.analyze(ingredients=request.ingredients)
-        return NutrientsEndpointResponse(
+        response = NutrientsEndpointResponse(
             status=Status.SUCCESSFUL,
             processed_at=datetime.utcnow(),
             request=request,
             response=result,
             error=None,
         )
+        mongodb_service.insert_one(
+            "nutrients_analyzer-analyzer",
+            response.model_dump(mode="json"),
+        )
+        return response
     except Exception as error:
-        return NutrientsEndpointResponse(
+        response = NutrientsEndpointResponse(
             status=Status.FAILED,
             processed_at=datetime.utcnow(),
             request=request,
             response=None,
             error=str(error),
         )
+        mongodb_service.insert_one("nutrients_analyzer", response.model_dump(mode="json"))
+        return response

@@ -12,6 +12,19 @@ services:
       retries: 5
     restart: unless-stopped
 
+  mongodb:
+    image: mongo:8.0
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "admin", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
   food-image-analyzer:
     build: .
     ports:
@@ -20,6 +33,8 @@ services:
       - .env
     depends_on:
       redis:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
     environment:
       - PYTHONPATH=.
@@ -39,3 +54,4 @@ services:
 
 volumes:
   redis-data:
+  mongodb-data:
