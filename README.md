@@ -10,6 +10,7 @@ This application provides:
 - 📊 **Nutritional Analysis**: Calculate detailed nutritional information (calories, macros, fiber)
 - 🚀 **FastAPI REST API**: Modern, fast API endpoints for integration
 - 🔄 **Redis Caching**: Cache analysis results for improved performance
+- 🗄️ **MongoDB Storage**: Persist analysis results and user data
 - 📡 **Opik Tracing**: Integrated observability and tracing for API calls
 - 🔍 **Smart Environment Loading**: Automatic `.env` file discovery with parent directory traversal
 - 📓 **Research Notebooks**: Jupyter notebooks for experimentation and development
@@ -27,6 +28,7 @@ This application provides:
 - OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
 - Opik API key ([Get one here](https://www.comet.com/site/products/opik/))
 - Redis server (optional, for caching)
+- MongoDB server (optional, for persistence)
 - `uv` package manager (recommended)
 
 ## Getting Started
@@ -70,84 +72,8 @@ uv add package-name
 uv add --dev package-name
 ```
 
-### 4. Set Up Environment Variables
-
-#### Option A: Using `.env` File (Recommended)
-
-Create a `.env` file in the project root:
-
-```bash
-# OpenAI API Configuration
-OPENAI_API_KEY=your-openai-api-key-here
-
-# Opik Tracing Configuration
-OPIK_API_KEY=your-opik-api-key-here
-OPIK_PROJECT_NAME=food-image-analyzer
-OPIK_WORKSPACE=your-opik-workspace
-OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
-
-# Redis Configuration (optional)
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_DB=0
-```
-
-When using Docker Compose, set `REDIS_HOST=redis` in `.env` (service name). When running on the host, keep `REDIS_HOST=localhost`.
-
-**Understanding Environment Variable Loading:**
-
-load it in your terminal session:
-
-```bash
-set -a; source .env; set +a
-```
-
-This project uses `python-dotenv` to automatically load environment variables from the `.env` file. The application is configured with smart `.env` file discovery using `find_dotenv()`:
-
-```python
-from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv())
-```
-
-**How `find_dotenv()` Works:**
-
-The `find_dotenv()` function intelligently searches for your `.env` file by **traversing parent directories**. This means:
-
-1. **Starts at the current file's location** (e.g., `src/api/app.py`)
-2. **Searches upward** through each parent directory:
-   - `src/api/` → no `.env` found
-   - `src/` → no `.env` found
-   - `food-image-analyzer/` (project root) → ✓ `.env` found!
-3. **Returns the path** to the first `.env` file it finds
-4. **Loads the variables** into your application's environment
-
-**Benefits of this approach:**
-
-- ✅ Works regardless of where you run your Python files from
-- ✅ No need to specify absolute paths
-- ✅ Single `.env` file at project root serves entire codebase
-- ✅ Consistent across different subdirectories (`src/api/`, `src/services/`, etc.)
-
-#### Option B: Export as Environment Variable
-
-**macOS/Linux:**
-
-```bash
-export OPENAI_API_KEY=your-api-key-here
-export OPIK_API_KEY=your-opik-api-key-here
-export OPIK_PROJECT_NAME=food-image-analyzer
-export OPIK_WORKSPACE=your-opik-workspace
-export OPIK_URL_OVERRIDE=https://www.comet.com/opik/api
-```
-
-**Windows (PowerShell):**
-
-```powershell
-$env:OPENAI_API_KEY = "your-api-key-here"
-$env:OPIK_API_KEY = "your-opik-api-key-here"
-```
-
-### 5. Run Redis (Optional)
+When using Docker Compose, set `REDIS_HOST=redis` and `MONGODB_HOST=mongodb` in `.env` (service names). When running on the host, keep `REDIS_HOST=localhost` and `MONGODB_HOST=localhost`.
+### 4. Run Redis (Optional)
 
 If you want to enable caching, start a Redis server:
 
@@ -159,7 +85,7 @@ docker run --rm -d -p 6379:6379 redis:latest
 brew services start redis
 ```
 
-### 6. Run the Application
+### 5. Run the Application
 
 #### FastAPI Server
 
@@ -188,7 +114,7 @@ docker run --rm -p 8000:8000 --env-file .env food-image-analyzer
 
 #### Docker Compose
 
-The compose file runs the API and Redis together. Make sure your `.env` is present
+The compose file runs the API, Redis, and MongoDB together. Make sure your `.env` is present
 before starting the stack.
 
 ```bash
@@ -198,7 +124,7 @@ docker compose up --build -d
 # Stop and remove containers
 docker compose down
 
-# Follow logs (service names: food-image-analyzer, redis)
+# Follow logs (service names: food-image-analyzer, redis, mongodb)
 docker compose logs -f food-image-analyzer
 ```
 
@@ -341,7 +267,7 @@ food-image-analyzer/
 ├── .gitignore              # Git ignore patterns
 ├── .python-version         # Python version specification
 ├── Dockerfile              # Docker container configuration
-├── docker-compose.yml      # Docker Compose stack (API + Redis)
+├── docker-compose.yml      # Docker Compose stack (API + Redis + MongoDB)
 ├── LICENSE                 # Project license
 ├── main.py                 # Command-line application entry point
 ├── notebooks/              # Jupyter notebooks for research
@@ -396,6 +322,7 @@ food-image-analyzer/
 | **Nutrients Analyzer**   | `src/services/analysis/nutrients.py`   | Calculates nutritional values from ingredients    |
 | **ChatGPT Client**       | `src/services/chat_gpt/gpt.py`         | OpenAI API wrapper with structured output support |
 | **Redis Cache**          | `src/services/cache/`                  | Caching layer for analysis results                |
+| **MongoDB Database**     | `src/services/database/`               | Persistence layer for analysis results            |
 | **Opik Tracing**         | `src/services/opik_tracing/`           | Observability and request tracing                 |
 | **Image Processing**     | `src/services/image_processing.py`     | Base64 encoding for images                        |
 | **Prompts**              | `src/services/prompts.py`              | AI prompts for analysis tasks                     |
