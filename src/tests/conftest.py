@@ -26,3 +26,9 @@ patch("openai.OpenAI", MagicMock).start()
 
 # Mock Opik tracking
 patch("opik.integrations.openai.track_openai", lambda x: x).start()
+
+# Mock MongoDB client to avoid real connection attempts in tests
+patch("services.database.client.MongoClient", MagicMock).start()
+
+# Mock MongoDB service to prevent module-level initialization side effects
+patch("services.database.client.MongoDBService", MagicMock).start()
