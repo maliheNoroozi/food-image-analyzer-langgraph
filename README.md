@@ -256,29 +256,28 @@ food-image-analyzer-langgraph/
 │   │   ├── run_evaluation.py  # Entry: load dataset, run eval
 │   │   ├── schema.py       # Evaluation data shapes
 │   │   └── scoring.py      # Nutrient scoring (e.g. MAE)
-│   └── services/
-│       ├── cache/          # Redis caching
-│       │   ├── __init__.py
-│       │   ├── client.py
-│       │   └── config.py
-│       ├── database/       # MongoDB persistence
-│       │   ├── __init__.py
-│       │   ├── client.py
-│       │   └── config.py
-│       ├── image_processing.py  # Base64 image encoding
-│       ├── llm/            # LangGraph + LangChain food pipeline
-│       │   ├── config.py   # Model name, temperature
-│       │   ├── food_llm.py # StateGraph: analyze_ingredients → analyze_nutrients
-│       │   └── schemas.py  # IngredientsResponse, NutrientsResponse
-│       ├── prompts.py      # System/user prompts for ingredients & nutrients
-│       └── tests/
-│           ├── conftest.py
-│           ├── api/
-│           │   └── test_app.py
-│           └── services/
-│               └── analysis/
-│                   ├── test_ingredients.py
-│                   └── test_nutrients.py
+│   ├── services/
+│   │   ├── cache/          # Redis caching
+│   │   │   ├── __init__.py
+│   │   │   ├── client.py
+│   │   │   └── config.py
+│   │   ├── database/       # MongoDB persistence
+│   │   │   ├── __init__.py
+│   │   │   ├── client.py
+│   │   │   └── config.py
+│   │   ├── image_processing.py  # Base64 image encoding
+│   │   ├── llm/            # LangGraph + LangChain food pipeline
+│   │   │   ├── config.py   # Model name, temperature
+│   │   │   ├── food_llm.py # StateGraph: analyze_ingredients → analyze_nutrients
+│   │   │   └── schemas.py  # IngredientsResponse, NutrientsResponse
+│   │   └── prompts.py      # System/user prompts for ingredients & nutrients
+│   └── tests/              # Pytest suite (conftest, api, services)
+│       ├── conftest.py
+│       ├── api/
+│       │   └── test_app.py
+│       └── services/
+│           └── llm/
+│               └── test_food_llm.py
 └── uv.lock
 ```
 
@@ -294,6 +293,7 @@ food-image-analyzer-langgraph/
 | **MongoDB**              | `src/services/database/`           | Persist analysis results                                                  |
 | **Image Processing**     | `src/services/image_processing.py` | Base64 encoding for image URLs                                            |
 | **Prompts**              | `src/services/prompts.py`          | Prompts for ingredient and nutrient analysis                              |
+| **Tests**                | `src/tests/`                        | Pytest suite: API (`api/`), LangGraph pipeline (`services/llm/`), fixtures (`conftest.py`) |
 
 ## Code Quality
 
@@ -337,27 +337,34 @@ uv run ruff check --select I --fix ./src/  # Sort imports
 
 ## Running Tests
 
-This project uses [pytest](https://docs.pytest.org/) for unit testing. Tests are under `src/tests/`. From the project root (with `pythonpath = ["src"]` in `pyproject.toml`):
+This project uses [pytest](https://docs.pytest.org/) for testing. The suite lives under `src/tests/` and mirrors the source layout; `pyproject.toml` sets `pythonpath = ["src"]` and `testpaths = ["tests"]`, so from the project root you can run:
 
-### Run All Tests
+| Directory / file              | What it tests                          |
+| ----------------------------- | -------------------------------------- |
+| `src/tests/conftest.py`       | Shared fixtures (e.g. for API / LLM)   |
+| `src/tests/api/`              | FastAPI app and `/food-analysis`       |
+| `src/tests/services/llm/`     | LangGraph pipeline (food_llm)         |
+
+### Run all tests
 
 ```bash
 uv run pytest src/tests
 ```
 
-### Run Tests with Verbose Output
+### Verbose output
 
 ```bash
-uv run pytest -v
+uv run pytest src/tests -v
 ```
 
-### Run a Specific Test File
+### Single file or path
 
 ```bash
 uv run pytest src/tests/api/test_app.py
+uv run pytest src/tests/services/llm/
 ```
 
-### Run Tests with Coverage
+### With coverage
 
 ```bash
 uv run pytest src/tests --cov=src
