@@ -105,7 +105,9 @@ class TestFoodLLM:
         """Test that analyze_ingredients returns cached result without calling LLM."""
         mock_encode.return_value = mock_base64_image
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_ingredients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_ingredients_response.model_dump_json()
+        )
         mock_redis_instance.set.return_value = None
 
         mock_llm = MagicMock()
@@ -188,7 +190,9 @@ class TestFoodLLM:
     ):
         """Test that analyze_nutrients returns cached result without calling LLM."""
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_nutrients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_nutrients_response.model_dump_json()
+        )
         mock_redis_instance.set.return_value = None
 
         mock_llm = MagicMock()
@@ -247,14 +251,18 @@ class TestFoodLLM:
         """Test that ingredients cache key is derived from image hash."""
         mock_encode.return_value = mock_base64_image
         mock_redis_instance = mock_redis_class.return_value
-        mock_redis_instance.get.return_value = sample_ingredients_response.model_dump_json()
+        mock_redis_instance.get.return_value = (
+            sample_ingredients_response.model_dump_json()
+        )
         mock_redis_instance.set.return_value = None
 
         mock_llm = MagicMock()
         mock_chat_openai_class.return_value = mock_llm
 
         food_llm = FoodLLM()
-        expected_key = f"ingredients:{hashlib.sha256(mock_base64_image.encode()).hexdigest()}"
+        expected_key = (
+            f"ingredients:{hashlib.sha256(mock_base64_image.encode()).hexdigest()}"
+        )
 
         state: State = {
             "image_url": "https://example.com/food.jpg",

@@ -8,10 +8,6 @@ from loguru import logger
 from api.schemas import (
     FoodAnalysisEndpointRequest,
     FoodAnalysisEndpointResponse,
-    IngredientsEndpointRequest,
-    IngredientsEndpointResponse,
-    NutrientsEndpointRequest,
-    NutrientsEndpointResponse,
     Status,
 )
 from services.database.client import MongoDBService
@@ -78,6 +74,5 @@ def food_analysis(request: FoodAnalysisEndpointRequest) -> FoodAnalysisEndpointR
         mongodb_service.insert_one("analysis-results", response.model_dump(mode="json"))
         logger.error(f"Error analyzing food image: {error}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(error)
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(error)
         )

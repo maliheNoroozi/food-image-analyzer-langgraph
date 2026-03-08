@@ -4,6 +4,7 @@ from services.llm.config import FOOD_LLM_MODEL
 from evaluation.schema import IngredientConfusionMatrix
 from services.prompts import FoodImageAnalyzerPrompts
 
+
 class IngredientsJudger:
     def __init__(self):
         self.llm = ChatOpenAI(

@@ -38,7 +38,11 @@ class FoodLLM:
             except Exception as error:
                 logger.error(f"Cache read failed for key {cache_key}: {error}")
             if cached_result:
-                return {"ingredients_response": IngredientsResponse.model_validate_json(cached_result)}
+                return {
+                    "ingredients_response": IngredientsResponse.model_validate_json(
+                        cached_result
+                    )
+                }
 
             messages = [
                 {
@@ -85,7 +89,11 @@ class FoodLLM:
             except Exception as error:
                 logger.error(f"Cache read failed for key {cache_key}: {error}")
             if cached_result:
-                return {"nutrients_response": NutrientsResponse.model_validate_json(cached_result)}
+                return {
+                    "nutrients_response": NutrientsResponse.model_validate_json(
+                        cached_result
+                    )
+                }
             ingredients_str = "\n".join([str(ingredient) for ingredient in ingredients])
             user_prompt = FoodImageAnalyzerPrompts.NUTRIENT_USER_PROMPT.format(
                 ingredients_list=ingredients_str

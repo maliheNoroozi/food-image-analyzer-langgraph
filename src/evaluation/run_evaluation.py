@@ -1,5 +1,3 @@
-from collections.abc import Iterable
-
 from dotenv import find_dotenv, load_dotenv
 from langsmith import Client as LangSmithClient
 from loguru import logger

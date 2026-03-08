@@ -8,9 +8,7 @@ from langsmith.schemas import Dataset
 from loguru import logger
 
 
-REQUIRED_INPUTS_DATASET_FIELDS = (
-    "img_url",
-)
+REQUIRED_INPUTS_DATASET_FIELDS = ("img_url",)
 
 REQUIRED_OUTPUTS_DATASET_FIELDS = (
     "ingredients",
@@ -37,7 +35,8 @@ def evaluate_dataset_item(
 
     llm_output = {
         "ingredients": [
-            ingredient.ingredient_name for ingredient in llm_result["ingredients_response"].ingredients
+            ingredient.ingredient_name
+            for ingredient in llm_result["ingredients_response"].ingredients
         ],
         "nutrients": {
             "carbohydrates": llm_result["nutrients_response"].total_carbohydrates_g,
