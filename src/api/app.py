@@ -1,26 +1,45 @@
+from contextlib import asynccontextmanager
 from datetime import datetime
 
 from dotenv import find_dotenv, load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
+from loguru import logger
 
 from api.schemas import (
+    FoodAnalysisEndpointRequest,
+    FoodAnalysisEndpointResponse,
     IngredientsEndpointRequest,
     IngredientsEndpointResponse,
     NutrientsEndpointRequest,
     NutrientsEndpointResponse,
     Status,
 )
-from services.analysis.ingredients import IngredientsAnalyzer
-from services.analysis.nutrients import NutrientsAnalyzer
-from services.opik_tracing.configure import configure_opik
 from services.database.client import MongoDBService
+from services.llm.food_llm import FoodLLM
 
 load_dotenv(find_dotenv())
-configure_opik()
-app = FastAPI()
-mongodb_service = MongoDBService()
-ingredients_analyzer = IngredientsAnalyzer()
-nutrients_analyzer = NutrientsAnalyzer()
+food_llm = None
+mongodb_service = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for the FastAPI app.
+    Handles startup and shutdown of the app.
+    """
+    try:
+        global food_llm, mongodb_service
+        food_llm = FoodLLM()
+        mongodb_service = MongoDBService()
+    except Exception as error:
+        logger.error(f"Error starting the app: {error}")
+        raise
+    yield
+    # Shutdown the app.
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
@@ -33,54 +52,32 @@ def health_check():
     return {"status": "healthy"}
 
 
-@app.post("/ingredients")
-def ingredients(request: IngredientsEndpointRequest) -> IngredientsEndpointResponse:
+@app.post("/food-analysis")
+def food_analysis(request: FoodAnalysisEndpointRequest) -> FoodAnalysisEndpointResponse:
     try:
-        result = ingredients_analyzer.analyze(image_url=request.image_url)
-        response = IngredientsEndpointResponse(
+        result = food_llm.invoke(image_url=request.image_url)
+        response = FoodAnalysisEndpointResponse(
             status=Status.SUCCESSFUL,
             processed_at=datetime.utcnow(),
             request=request,
-            response=result,
+            ingredients_response=result.get("ingredients_response"),
+            nutrients_response=result.get("nutrients_response"),
             error=None,
         )
-        mongodb_service.insert_one("ingredients-analyzer", response.model_dump(mode="json"))
+        mongodb_service.insert_one("analysis-results", response.model_dump(mode="json"))
         return response
     except Exception as error:
-        response = IngredientsEndpointResponse(
+        response = FoodAnalysisEndpointResponse(
             status=Status.FAILED,
             processed_at=datetime.utcnow(),
             request=request,
-            response=None,
+            ingredients_response=None,
+            nutrients_response=None,
             error=str(error),
         )
-        mongodb_service.insert_one("ingredients-analyzer", response.model_dump(mode="json"))
-        return response
-
-
-@app.post("/nutrients")
-def nutrients(request: NutrientsEndpointRequest) -> NutrientsEndpointResponse:
-    try:
-        result = nutrients_analyzer.analyze(ingredients=request.ingredients)
-        response = NutrientsEndpointResponse(
-            status=Status.SUCCESSFUL,
-            processed_at=datetime.utcnow(),
-            request=request,
-            response=result,
-            error=None,
+        mongodb_service.insert_one("analysis-results", response.model_dump(mode="json"))
+        logger.error(f"Error analyzing food image: {error}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(error)
         )
-        mongodb_service.insert_one(
-            "nutrients_analyzer-analyzer",
-            response.model_dump(mode="json"),
-        )
-        return response
-    except Exception as error:
-        response = NutrientsEndpointResponse(
-            status=Status.FAILED,
-            processed_at=datetime.utcnow(),
-            request=request,
-            response=None,
-            error=str(error),
-        )
-        mongodb_service.insert_one("nutrients_analyzer", response.model_dump(mode="json"))
-        return response
