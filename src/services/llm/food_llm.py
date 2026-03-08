@@ -1,8 +1,11 @@
+import hashlib
+
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from loguru import logger
 from typing_extensions import TypedDict
 
+from services.cache.client import RedisService
 from services.image_processing import encode_image_by_url
 from services.llm.config import FOOD_LLM_MODEL, FOOD_LLM_TEMPERATURE
 from services.llm.schemas import IngredientsResponse, NutrientsResponse
@@ -21,11 +24,21 @@ class FoodLLM:
             model=FOOD_LLM_MODEL,
             temperature=FOOD_LLM_TEMPERATURE,
         )
+        self.redis_service = RedisService()
         self.chain = self.build_workflow()
 
     def analyze_ingredients(self, state: State):
         try:
             base64_image = encode_image_by_url(state["image_url"])
+            image_hash = hashlib.sha256(base64_image.encode()).hexdigest()
+            cache_key = f"ingredients:{image_hash}"
+            cached_result = None
+            try:
+                cached_result = self.redis_service.get(cache_key)
+            except Exception as error:
+                logger.error(f"Cache read failed for key {cache_key}: {error}")
+            if cached_result:
+                return {"ingredients_response": IngredientsResponse.model_validate_json(cached_result)}
 
             messages = [
                 {
@@ -50,6 +63,10 @@ class FoodLLM:
 
             structured_llm = self.llm.with_structured_output(IngredientsResponse)
             result = structured_llm.invoke(messages)
+            try:
+                self.redis_service.set(cache_key, result.model_dump_json())
+            except Exception as error:
+                logger.error(f"Cache write failed for key {cache_key}: {error}")
             return {"ingredients_response": result}
         except Exception as error:
             logger.error(f"Error analyzing ingredients: {error}")
@@ -58,6 +75,17 @@ class FoodLLM:
     def analyze_nutrients(self, state: State):
         try:
             ingredients = state["ingredients_response"].ingredients
+            ingredients_key = "_".join(
+                [f"{i.ingredient_name}:{i.portion}" for i in ingredients]
+            )
+            cache_key = f"nutrients:{ingredients_key}"
+            cached_result = None
+            try:
+                cached_result = self.redis_service.get(cache_key)
+            except Exception as error:
+                logger.error(f"Cache read failed for key {cache_key}: {error}")
+            if cached_result:
+                return {"nutrients_response": NutrientsResponse.model_validate_json(cached_result)}
             ingredients_str = "\n".join([str(ingredient) for ingredient in ingredients])
             user_prompt = FoodImageAnalyzerPrompts.NUTRIENT_USER_PROMPT.format(
                 ingredients_list=ingredients_str
@@ -73,6 +101,10 @@ class FoodLLM:
 
             structured_llm = self.llm.with_structured_output(NutrientsResponse)
             result = structured_llm.invoke(messages)
+            try:
+                self.redis_service.set(cache_key, result.model_dump_json())
+            except Exception as error:
+                logger.error(f"Cache write failed for key {cache_key}: {error}")
             return {"nutrients_response": result}
         except Exception as error:
             logger.error(f"Error analyzing nutrients: {error}")
