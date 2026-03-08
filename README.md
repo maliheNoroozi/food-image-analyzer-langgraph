@@ -1,6 +1,6 @@
 # food-image-analyzer
 
-AI-powered food image analyzer that analyzes food images to extract ingredients and nutritional information using OpenAI's Vision API.
+AI-powered food image analyzer that extracts ingredients and nutritional information from food images using **LangGraph** (orchestration), **LangChain** / OpenAI Vision, and **LangSmith** (evaluation and tracing).
 
 ## Overview
 
@@ -8,25 +8,27 @@ This application provides:
 
 - 🍽️ **Ingredient Detection**: Analyze food images to identify ingredients and their quantities
 - 📊 **Nutritional Analysis**: Calculate detailed nutritional information (calories, macros, fiber)
-- 🚀 **FastAPI REST API**: Modern, fast API endpoints for integration
+- 🔀 **LangGraph Workflow**: A stateful pipeline that runs ingredient analysis → nutrient analysis in sequence
+- 🚀 **FastAPI REST API**: Modern, fast API with a single `/food-analysis` endpoint
 - 🔄 **Redis Caching**: Cache analysis results for improved performance
 - 🗄️ **MongoDB Storage**: Persist analysis results and user data
-- 📡 **Opik Tracing**: Integrated observability and tracing for API calls
+- 📡 **LangSmith**: Optional tracing and evaluation with LangSmith datasets
 - 🔍 **Smart Environment Loading**: Automatic `.env` file discovery with parent directory traversal
 - 📓 **Research Notebooks**: Jupyter notebooks for experimentation and development
 
 ### How It Works
 
-1. **Upload/provide a food image URL**
-2. **AI Vision Analysis**: OpenAI's GPT-4.1 Vision model identifies ingredients
-3. **Nutritional Calculation**: Analyzes nutritional content based on identified ingredients
-4. **Structured Response**: Returns detailed JSON with ingredients, quantities, and nutrients
+1. **Provide a food image URL** via the API.
+2. **LangGraph pipeline** runs two nodes in order:
+   - **analyze_ingredients**: Encodes the image, (optionally) checks Redis cache, then uses a LangChain/OpenAI vision model with structured output to detect ingredients.
+   - **analyze_nutrients**: Uses the same LLM with structured output to compute nutrients from those ingredients (with optional caching).
+3. **Structured response**: Returns JSON with ingredients, quantities, and nutrients. Results can be traced in **LangSmith** when configured.
 
 ## Prerequisites
 
 - Python 3.12 or higher
 - OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
-- Opik API key ([Get one here](https://www.comet.com/site/products/opik/))
+- LangSmith API key ([Get one here](https://smith.langchain.com/)) — optional; used for tracing and running evaluations
 - Redis server (optional, for caching)
 - MongoDB server (optional, for persistence)
 - `uv` package manager (recommended)
@@ -131,23 +133,21 @@ docker compose logs -f food-image-analyzer
 
 ## API Endpoints
 
-| Method | Endpoint       | Description                          |
-| ------ | -------------- | ------------------------------------ |
-| `GET`  | `/`            | Welcome message                      |
-| `GET`  | `/health`      | Health check endpoint                |
-| `POST` | `/ingredients` | Analyze image to extract ingredients |
-| `POST` | `/nutrients`   | Calculate nutritional information    |
+| Method | Endpoint         | Description                                                            |
+| ------ | ---------------- | ---------------------------------------------------------------------- |
+| `GET`  | `/`              | Welcome message                                                        |
+| `GET`  | `/health`        | Health check endpoint                                                  |
+| `POST` | `/food-analysis` | Full pipeline: analyze image → extract ingredients → compute nutrients |
 
-### POST `/ingredients`
+### POST `/food-analysis`
 
-Analyze a food image to extract ingredients.
+Runs the full **LangGraph** pipeline: ingredient detection from the image, then nutrient calculation from those ingredients. Returns both in one response.
 
 **Request Body:**
 
 ```json
 {
-  "image_url": "https://example.com/food-image.jpg",
-  "user_id": "user-123"
+  "image_url": "https://example.com/food-image.jpg"
 }
 ```
 
@@ -158,45 +158,17 @@ Analyze a food image to extract ingredients.
   "status": "successful",
   "processed_at": "2026-01-12T10:30:00Z",
   "request": {
-    "image_url": "https://example.com/food-image.jpg",
-    "user_id": "user-123"
+    "image_url": "https://example.com/food-image.jpg"
   },
-  "response": {
+  "ingredients_response": {
     "name": "Caesar Salad",
     "ingredients": [
-      { "ingredient_name": "Romaine lettuce", "portiont": "2 cups" },
-      { "ingredient_name": "Parmesan cheese", "portiont": "30g" },
-      { "ingredient_name": "Croutons", "portiont": "1/2 cup" }
+      { "ingredient_name": "Romaine lettuce", "portion": "2 cups" },
+      { "ingredient_name": "Parmesan cheese", "portion": "30g" },
+      { "ingredient_name": "Croutons", "portion": "1/2 cup" }
     ]
   },
-  "error": null
-}
-```
-
-### POST `/nutrients`
-
-Calculate nutritional information from ingredients.
-
-**Request Body:**
-
-```json
-{
-  "ingredients": [
-    { "ingredient_name": "Romaine lettuce", "portiont": "2 cups" },
-    { "ingredient_name": "Parmesan cheese", "portiont": "30g" }
-  ],
-  "user_id": "user-123"
-}
-```
-
-**Response:**
-
-```json
-{
-  "status": "successful",
-  "processed_at": "2026-01-12T10:30:00Z",
-  "request": { ... },
-  "response": {
+  "nutrients_response": {
     "total_calories": 250,
     "total_protein_g": 12.5,
     "total_carbohydrates_g": 15.0,
@@ -260,77 +232,71 @@ $env:PYTHONPATH = "."; python main.py
 ## Project Structure
 
 ```
-food-image-analyzer/
-├── .env                    # Environment variables (create this)
-├── .github/                # GitHub configuration
+food-image-analyzer-langgraph/
+├── .env                    # Environment variables (create from .env.example)
+├── .env.example            # Example: OpenAI, LangSmith, Redis, MongoDB
+├── .github/
 │   └── workflows/
 │       └── tests.yml       # CI/CD test workflow
-├── .gitignore              # Git ignore patterns
-├── .python-version         # Python version specification
-├── Dockerfile              # Docker container configuration
-├── docker-compose.yml      # Docker Compose stack (API + Redis + MongoDB)
-├── LICENSE                 # Project license
-├── main.py                 # Command-line application entry point
-├── notebooks/              # Jupyter notebooks for research
-│   └── research.ipynb      # Research and experimentation notebook
-├── pyproject.toml          # Project dependencies and configuration
-├── README.md               # This file
-├── src/                    # Source code directory
-│   ├── api/                # FastAPI application
-│   │   ├── __init__.py     # Package initializer
-│   │   ├── app.py          # API endpoints and server setup
-│   │   └── schemas.py      # API request/response schemas (Pydantic models)
-│   └── services/           # Service modules
-│       ├── __init__.py     # Package initializer
-│       ├── analysis/       # Food analysis services
-│       │   ├── ingredients.py  # Ingredient detection using GPT Vision
-│       │   ├── nutrients.py    # Nutritional analysis
-│       │   └── schemas.py      # Data models (Ingredient, IngredientsResponse, NutrientsResponse)
-│       ├── cache/          # Redis caching service
-│       │   ├── __init__.py
-│       │   ├── client.py   # RedisService for get/set operations
-│       │   └── config.py   # Redis connection configuration
-│       ├── database/       # MongoDB persistence service
-│       │   ├── __init__.py
-│       │   ├── client.py   # MongoDBService and CRUD operations
-│       │   └── config.py   # MongoDB connection configuration
-│       ├── chat_gpt/       # OpenAI ChatGPT integration
-│       │   ├── __init__.py
-│       │   ├── config.py   # Default model configuration (gpt-4.1)
-│       │   └── gpt.py      # ChatGPT client with text, parsed, and image response methods
-│       ├── image_processing.py  # Image encoding utilities (base64)
-│       ├── opik_tracing/   # Opik observability integration
-│       │   ├── config.py   # Opik configuration settings
-│       │   └── configure.py # Opik setup and initialization
-│       └── prompts.py      # AI prompts for ingredient and nutrient analysis
-├── tests/                  # Test suite
-│   ├── __init__.py
-│   ├── conftest.py         # Pytest fixtures and configuration
-│   ├── api/                # API endpoint tests
+├── .gitignore
+├── .python-version
+├── Dockerfile
+├── docker-compose.yml      # API + Redis + MongoDB
+├── LICENSE
+├── Makefile                # Ruff lint/format, clean
+├── notebooks/
+│   └── research.ipynb      # Research and experimentation
+├── pyproject.toml
+├── README.md
+├── src/
+│   ├── api/
 │   │   ├── __init__.py
-│   │   └── test_app.py     # FastAPI app tests
-│   └── services/           # Service tests
-│       ├── __init__.py
-│       └── analysis/       # Analysis service tests
-│           ├── __init__.py
-│           ├── test_ingredients.py  # Ingredient analysis tests
-│           └── test_nutrients.py    # Nutrient analysis tests
-└── uv.lock                 # Dependency lock file
+│   │   ├── app.py          # FastAPI app, /food-analysis endpoint
+│   │   └── schemas.py      # Request/response Pydantic models
+│   ├── evaluation/         # LangSmith-based evaluation
+│   │   ├── eval_dataset.py # Run model on LangSmith dataset, score results
+│   │   ├── llm_judging.py  # LLM-as-judge for ingredient quality
+│   │   ├── run_evaluation.py  # Entry: load dataset, run eval
+│   │   ├── schema.py       # Evaluation data shapes
+│   │   └── scoring.py      # Nutrient scoring (e.g. MAE)
+│   └── services/
+│       ├── cache/          # Redis caching
+│       │   ├── __init__.py
+│       │   ├── client.py
+│       │   └── config.py
+│       ├── database/       # MongoDB persistence
+│       │   ├── __init__.py
+│       │   ├── client.py
+│       │   └── config.py
+│       ├── image_processing.py  # Base64 image encoding
+│       ├── llm/            # LangGraph + LangChain food pipeline
+│       │   ├── config.py   # Model name, temperature
+│       │   ├── food_llm.py # StateGraph: analyze_ingredients → analyze_nutrients
+│       │   └── schemas.py  # IngredientsResponse, NutrientsResponse
+│       ├── prompts.py      # System/user prompts for ingredients & nutrients
+│       └── tests/
+│           ├── conftest.py
+│           ├── api/
+│           │   └── test_app.py
+│           └── services/
+│               └── analysis/
+│                   ├── test_ingredients.py
+│                   └── test_nutrients.py
+└── uv.lock
 ```
 
 ### Key Components
 
-| Component                | Path                                   | Description                                       |
-| ------------------------ | -------------------------------------- | ------------------------------------------------- |
-| **API Layer**            | `src/api/`                             | FastAPI REST endpoints with Pydantic schemas      |
-| **Ingredients Analyzer** | `src/services/analysis/ingredients.py` | Uses GPT-4.1 Vision to detect food ingredients    |
-| **Nutrients Analyzer**   | `src/services/analysis/nutrients.py`   | Calculates nutritional values from ingredients    |
-| **ChatGPT Client**       | `src/services/chat_gpt/gpt.py`         | OpenAI API wrapper with structured output support |
-| **Redis Cache**          | `src/services/cache/`                  | Caching layer for analysis results                |
-| **MongoDB Database**     | `src/services/database/`               | Persistence layer for analysis results            |
-| **Opik Tracing**         | `src/services/opik_tracing/`           | Observability and request tracing                 |
-| **Image Processing**     | `src/services/image_processing.py`     | Base64 encoding for images                        |
-| **Prompts**              | `src/services/prompts.py`              | AI prompts for analysis tasks                     |
+| Component                | Path                               | Description                                                               |
+| ------------------------ | ---------------------------------- | ------------------------------------------------------------------------- |
+| **API Layer**            | `src/api/`                         | FastAPI app; `/food-analysis` runs the full LangGraph pipeline            |
+| **LangGraph Pipeline**   | `src/services/llm/food_llm.py`     | StateGraph: ingredients → nutrients; LangChain + OpenAI structured output |
+| **LLM Config & Schemas** | `src/services/llm/`                | Model config and Pydantic schemas for structured LLM output               |
+| **LangSmith Evaluation** | `src/evaluation/`                  | Load datasets from LangSmith, run FoodLLM, score with LLM judge & metrics |
+| **Redis Cache**          | `src/services/cache/`              | Cache ingredient and nutrient results                                     |
+| **MongoDB**              | `src/services/database/`           | Persist analysis results                                                  |
+| **Image Processing**     | `src/services/image_processing.py` | Base64 encoding for image URLs                                            |
+| **Prompts**              | `src/services/prompts.py`          | Prompts for ingredient and nutrient analysis                              |
 
 ### Using Jupyter Notebooks
 
@@ -349,45 +315,45 @@ This project uses [Ruff](https://docs.astral.sh/ruff/) for fast Python linting a
 **Check for linting issues:**
 
 ```bash
-uv run ruff check .
+uv run ruff check ./src/ --exclude ./notebooks/
 ```
 
 **Auto-fix linting issues:**
 
 ```bash
-uv run ruff check --fix . --exclude notebooks/
+uv run ruff check --fix ./src/ --exclude ./notebooks/
 ```
 
 **Format code:**
 
 ```bash
-uv run ruff format . --exclude notebooks/
+uv run ruff format ./src/ --exclude ./notebooks/
 ```
 
 **Check formatting (without making changes):**
 
 ```bash
-uv run ruff format --check . --exclude notebooks/
+uv run ruff format --check ./src/ --exclude ./notebooks/
 ```
 
 ### Recommended Workflow
 
-Before committing code, run:
+Before committing code, run (or use `make ruff_lint` and `make ruff_format`):
 
 ```bash
-uv run ruff check --fix . --exclude notebooks/            # Automatically fix linting violations
-uv run ruff format . --exclude notebooks/               # Format code for consistent style
-uv run ruff check --select I --fix --exclude notebooks/    # Sort and organize import statements
+uv run ruff check --fix ./src/ --exclude ./notebooks/      # Fix linting violations
+uv run ruff format ./src/ --exclude ./notebooks/          # Format code
+uv run ruff check --select I --fix ./src/ --exclude ./notebooks/  # Sort imports
 ```
 
 ## Running Tests
 
-This project uses [pytest](https://docs.pytest.org/) for unit testing.
+This project uses [pytest](https://docs.pytest.org/) for unit testing. Tests are under `src/tests/`. From the project root (with `pythonpath = ["src"]` in `pyproject.toml`):
 
 ### Run All Tests
 
 ```bash
-uv run pytest
+uv run pytest src/tests
 ```
 
 ### Run Tests with Verbose Output
@@ -399,13 +365,13 @@ uv run pytest -v
 ### Run a Specific Test File
 
 ```bash
-uv run pytest tests/api/test_app.py
+uv run pytest src/tests/api/test_app.py
 ```
 
 ### Run Tests with Coverage
 
 ```bash
-uv run pytest --cov=src
+uv run pytest src/tests --cov=src
 ```
 
 ## CI/CD
@@ -417,16 +383,28 @@ This project uses GitHub Actions for continuous integration. Tests are automatic
 
 See `.github/workflows/tests.yml` for the workflow configuration.
 
+## LangGraph and LangSmith
+
+- **LangGraph** ([docs](https://langchain-ai.github.io/langgraph/)): The analysis pipeline is implemented as a compiled `StateGraph` in `src/services/llm/food_llm.py`. The graph has two nodes—`analyze_ingredients` and `analyze_nutrients`—that run in sequence. State (image URL, ingredient result, nutrient result) is passed between nodes; the chain is invoked with an image URL and returns both responses.
+- **LangSmith** ([docs](https://docs.smith.langchain.com/)): Used for:
+  - **Tracing**: Set `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY` (and optionally `LANGSMITH_PROJECT`) in `.env` to trace runs in the LangSmith UI.
+  - **Evaluation**: The `src/evaluation/` module uses the LangSmith client to load a dataset (e.g. `food-image-analyzer`), run the `FoodLLM` pipeline on each example, and score outputs (LLM-as-judge for ingredients, numeric metrics for nutrients). Create a dataset in [LangSmith](https://smith.langchain.com/) with inputs (e.g. `img_url`) and expected outputs (e.g. `ingredients`, `carbohydrates`, `protein`, `fat`, `total_calories`) to run evaluations.
+
 ## Dependencies
 
 ### Runtime Dependencies
 
-| Package             | Description                            |
-| ------------------- | -------------------------------------- |
-| `fastapi[standard]` | Modern web framework for building APIs |
-| `openai`            | OpenAI Python SDK for GPT models       |
-| `opik`              | Observability and tracing platform     |
-| `requests`          | HTTP library for image fetching        |
+| Package             | Description                                       |
+| ------------------- | ------------------------------------------------- |
+| `fastapi[standard]` | Web framework for the API                         |
+| `langchain`         | LangChain core                                    |
+| `langchain-openai`  | OpenAI integration for LangChain                  |
+| `langgraph`         | Stateful graph workflow (ingredients → nutrients) |
+| `langsmith`         | Tracing and dataset client for evaluation         |
+| `openai`            | OpenAI Python SDK                                 |
+| `pymongo`           | MongoDB client                                    |
+| `redis`             | Redis client for caching                          |
+| `requests`          | HTTP library for image fetching                   |
 
 ### Development Dependencies
 
@@ -434,7 +412,6 @@ See `.github/workflows/tests.yml` for the workflow configuration.
 | ----------- | -------------------------------- |
 | `ipykernel` | Jupyter notebook kernel          |
 | `loguru`    | Logging library                  |
-| `redis`     | Redis client for caching         |
 | `ruff`      | Fast Python linter and formatter |
 | `pytest`    | Testing framework                |
 
@@ -575,19 +552,21 @@ $$\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}$$
 
 ## Run evaluation
 
-Run the evaluation module from the project root.
+Evaluation uses **LangSmith** to load a dataset and score the pipeline (ingredient quality via LLM judge, nutrient metrics). Set `LANGSMITH_API_KEY` (and optionally `LANGSMITH_TRACING`, `LANGSMITH_PROJECT`) in `.env`. Create a dataset named `food-image-analyzer` (or change `dataset_name` in `run_evaluation.py`) with the expected input/output fields used in `eval_dataset.py`.
 
-Docker Compose:
+From the project root:
 
+**Local:**
+
+```bash
+cd src && uv run python -m evaluation.run_evaluation
 ```
-docker compose up --build -d \
-cd src &&  uv run python -m evaluation.run_evaluation
-```
 
-Host (local Python):
+**With Docker Compose** (start stack first, then run eval in a container or on the host with network access to any required services):
 
-```
-uv run python -m evaluation.run_evaluation
+```bash
+docker compose up --build -d
+cd src && uv run python -m evaluation.run_evaluation
 ```
 
 ## License
