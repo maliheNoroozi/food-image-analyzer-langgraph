@@ -14,7 +14,6 @@ This application provides:
 - 🗄️ **MongoDB Storage**: Persist analysis results and user data
 - 📡 **LangSmith**: Optional tracing and evaluation with LangSmith datasets
 - 🔍 **Smart Environment Loading**: Automatic `.env` file discovery with parent directory traversal
-- 📓 **Research Notebooks**: Jupyter notebooks for experimentation and development
 
 ### How It Works
 
@@ -244,8 +243,6 @@ food-image-analyzer-langgraph/
 ├── docker-compose.yml      # API + Redis + MongoDB
 ├── LICENSE
 ├── Makefile                # Ruff lint/format, clean
-├── notebooks/
-│   └── research.ipynb      # Research and experimentation
 ├── pyproject.toml
 ├── README.md
 ├── src/
@@ -298,14 +295,6 @@ food-image-analyzer-langgraph/
 | **Image Processing**     | `src/services/image_processing.py` | Base64 encoding for image URLs                                            |
 | **Prompts**              | `src/services/prompts.py`          | Prompts for ingredient and nutrient analysis                              |
 
-### Using Jupyter Notebooks
-
-To run the research notebooks:
-
-```bash
-uv run jupyter notebook notebooks/research.ipynb
-```
-
 ## Code Quality
 
 This project uses [Ruff](https://docs.astral.sh/ruff/) for fast Python linting and formatting.
@@ -315,25 +304,25 @@ This project uses [Ruff](https://docs.astral.sh/ruff/) for fast Python linting a
 **Check for linting issues:**
 
 ```bash
-uv run ruff check ./src/ --exclude ./notebooks/
+uv run ruff check ./src/
 ```
 
 **Auto-fix linting issues:**
 
 ```bash
-uv run ruff check --fix ./src/ --exclude ./notebooks/
+uv run ruff check --fix ./src/
 ```
 
 **Format code:**
 
 ```bash
-uv run ruff format ./src/ --exclude ./notebooks/
+uv run ruff format ./src/
 ```
 
 **Check formatting (without making changes):**
 
 ```bash
-uv run ruff format --check ./src/ --exclude ./notebooks/
+uv run ruff format --check ./src/
 ```
 
 ### Recommended Workflow
@@ -341,9 +330,9 @@ uv run ruff format --check ./src/ --exclude ./notebooks/
 Before committing code, run (or use `make ruff_lint` and `make ruff_format`):
 
 ```bash
-uv run ruff check --fix ./src/ --exclude ./notebooks/      # Fix linting violations
-uv run ruff format ./src/ --exclude ./notebooks/          # Format code
-uv run ruff check --select I --fix ./src/ --exclude ./notebooks/  # Sort imports
+uv run ruff check --fix ./src/      # Fix linting violations
+uv run ruff format ./src/          # Format code
+uv run ruff check --select I --fix ./src/  # Sort imports
 ```
 
 ## Running Tests
@@ -408,12 +397,11 @@ See `.github/workflows/tests.yml` for the workflow configuration.
 
 ### Development Dependencies
 
-| Package     | Description                      |
-| ----------- | -------------------------------- |
-| `ipykernel` | Jupyter notebook kernel          |
-| `loguru`    | Logging library                  |
-| `ruff`      | Fast Python linter and formatter |
-| `pytest`    | Testing framework                |
+| Package  | Description                      |
+| -------- | -------------------------------- |
+| `loguru` | Logging library                  |
+| `ruff`   | Fast Python linter and formatter |
+| `pytest` | Testing framework                |
 
 ## LLM Evaluation
 
