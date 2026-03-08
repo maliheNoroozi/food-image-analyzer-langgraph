@@ -1,12 +1,14 @@
-from pymongo import MongoClient
 from loguru import logger
+from pymongo import MongoClient
 
 from services.database.config import mongodb_config
 
 
 class MongoDBService:
     def __init__(self):
-        self.client = MongoClient(mongodb_config.mongodb_host, mongodb_config.mongodb_port)
+        self.client = MongoClient(
+            mongodb_config.mongodb_host, mongodb_config.mongodb_port
+        )
         try:
             self.client.admin.command("ping")
         except Exception as e:
@@ -24,10 +26,14 @@ class MongoDBService:
     def insert_one(self, collection: str, document: dict):
         try:
             result = self.get_collection(collection).insert_one(document)
-            logger.info(f"Successfully inserted one document into collection {collection}")
+            logger.info(
+                f"Successfully inserted one document into collection {collection}"
+            )
             return result
         except Exception as e:
-            logger.error(f"Error inserting one document into collection {collection}: {e}")
+            logger.error(
+                f"Error inserting one document into collection {collection}: {e}"
+            )
             raise
 
     def insert_many(self, collection: str, documents: list[dict]):
@@ -38,7 +44,9 @@ class MongoDBService:
             )
             return result
         except Exception as e:
-            logger.error(f"Error inserting many documents into collection {collection}: {e}")
+            logger.error(
+                f"Error inserting many documents into collection {collection}: {e}"
+            )
             raise
 
     def find_one(self, collection: str, query: dict):
@@ -47,12 +55,14 @@ class MongoDBService:
         except Exception as e:
             logger.error(f"Error finding one document in collection {collection}: {e}")
             raise
-    
+
     def find_many(self, collection: str, query: dict):
         try:
             return self.get_collection(collection).find(query)
         except Exception as e:
-            logger.error(f"Error finding many documents in collection {collection}: {e}")
+            logger.error(
+                f"Error finding many documents in collection {collection}: {e}"
+            )
             raise
 
     def update_one(self, collection: str, query: dict, update: dict):
@@ -76,7 +86,9 @@ class MongoDBService:
             )
             return result
         except Exception as e:
-            logger.error(f"Error updating many documents in collection {collection}: {e}")
+            logger.error(
+                f"Error updating many documents in collection {collection}: {e}"
+            )
             raise
 
     def delete_one(self, collection: str, query: dict):
@@ -100,5 +112,7 @@ class MongoDBService:
             )
             return result
         except Exception as e:
-            logger.error(f"Error deleting many documents in collection {collection}: {e}")
+            logger.error(
+                f"Error deleting many documents in collection {collection}: {e}"
+            )
             raise
