@@ -7,7 +7,7 @@ AI-powered food image analyzer that extracts ingredients and nutritional informa
 This application provides:
 
 - 🍽️ **Ingredient Detection**: Analyze food images to identify ingredients and their quantities
-- 📊 **Nutritional Analysis**: Calculate detailed nutritional information (calories, macros, fiber)
+- 📊 **Nutritional Analysis**: Calculate detailed nutritional information (calories, fat, protein)
 - 🔀 **LangGraph Workflow**: A stateful pipeline that runs ingredient analysis → nutrient analysis in sequence
 - 🚀 **FastAPI REST API**: Modern, fast API with a single `/food-analysis` endpoint
 - 🔄 **Redis Caching**: Cache analysis results for improved performance
@@ -283,17 +283,17 @@ food-image-analyzer-langgraph/
 
 ### Key Components
 
-| Component                | Path                               | Description                                                               |
-| ------------------------ | ---------------------------------- | ------------------------------------------------------------------------- |
-| **API Layer**            | `src/api/`                         | FastAPI app; `/food-analysis` runs the full LangGraph pipeline            |
-| **LangGraph Pipeline**   | `src/services/llm/food_llm.py`     | StateGraph: ingredients → nutrients; LangChain + OpenAI structured output |
-| **LLM Config & Schemas** | `src/services/llm/`                | Model config and Pydantic schemas for structured LLM output               |
-| **LangSmith Evaluation** | `src/evaluation/`                  | Load datasets from LangSmith, run FoodLLM, score with LLM judge & metrics |
-| **Redis Cache**          | `src/services/cache/`              | Cache ingredient and nutrient results                                     |
-| **MongoDB**              | `src/services/database/`           | Persist analysis results                                                  |
-| **Image Processing**     | `src/services/image_processing.py` | Base64 encoding for image URLs                                            |
-| **Prompts**              | `src/services/prompts.py`          | Prompts for ingredient and nutrient analysis                              |
-| **Tests**                | `src/tests/`                        | Pytest suite: API (`api/`), LangGraph pipeline (`services/llm/`), fixtures (`conftest.py`) |
+| Component                | Path                               | Description                                                                                |
+| ------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------ |
+| **API Layer**            | `src/api/`                         | FastAPI app; `/food-analysis` runs the full LangGraph pipeline                             |
+| **LangGraph Pipeline**   | `src/services/llm/food_llm.py`     | StateGraph: ingredients → nutrients; LangChain + OpenAI structured output                  |
+| **LLM Config & Schemas** | `src/services/llm/`                | Model config and Pydantic schemas for structured LLM output                                |
+| **LangSmith Evaluation** | `src/evaluation/`                  | Load datasets from LangSmith, run FoodLLM, score with LLM judge & metrics                  |
+| **Redis Cache**          | `src/services/cache/`              | Cache ingredient and nutrient results                                                      |
+| **MongoDB**              | `src/services/database/`           | Persist analysis results                                                                   |
+| **Image Processing**     | `src/services/image_processing.py` | Base64 encoding for image URLs                                                             |
+| **Prompts**              | `src/services/prompts.py`          | Prompts for ingredient and nutrient analysis                                               |
+| **Tests**                | `src/tests/`                       | Pytest suite: API (`api/`), LangGraph pipeline (`services/llm/`), fixtures (`conftest.py`) |
 
 ## Code Quality
 
@@ -339,11 +339,11 @@ uv run ruff check --select I --fix ./src/  # Sort imports
 
 This project uses [pytest](https://docs.pytest.org/) for testing. The suite lives under `src/tests/` and mirrors the source layout; `pyproject.toml` sets `pythonpath = ["src"]` and `testpaths = ["tests"]`, so from the project root you can run:
 
-| Directory / file              | What it tests                          |
-| ----------------------------- | -------------------------------------- |
-| `src/tests/conftest.py`       | Shared fixtures (e.g. for API / LLM)   |
-| `src/tests/api/`              | FastAPI app and `/food-analysis`       |
-| `src/tests/services/llm/`     | LangGraph pipeline (food_llm)         |
+| Directory / file          | What it tests                        |
+| ------------------------- | ------------------------------------ |
+| `src/tests/conftest.py`   | Shared fixtures (e.g. for API / LLM) |
+| `src/tests/api/`          | FastAPI app and `/food-analysis`     |
+| `src/tests/services/llm/` | LangGraph pipeline (food_llm)        |
 
 ### Run all tests
 
